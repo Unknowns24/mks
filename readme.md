@@ -1,0 +1,91 @@
+# mks CLI
+
+mks is a command-line interface (CLI) tool that helps you generate basic microservices structures with different features. It allows you to quickly set up microservices projects by creating the necessary files and directories based on your requirements.
+
+## Installation
+
+To install mks, you need to have Go installed on your system. Then, run the following command:
+
+```sh
+go install github.com/unknowns24/mks
+```
+
+## Usage
+
+### Build a Microservice
+
+To create a basic microservice structure, use the `build` command:
+
+```sh
+mks build [name] --[features]
+
+```
+
+-   `name`: The name of the microservice to be generated.
+-   `features`: (Optional) Generate microservice with features.
+
+_Example:_
+
+```sh
+mks build ms_apps --mysql --grpc --rabbitmq-both
+
+```
+
+### Add a Feature
+
+To add a specific feature to an existing microservice, use the `add` command:
+
+```sh
+mks add [feature]
+
+```
+
+-   `feature`: The feature you want to add.
+
+_Example:_
+
+```sh
+mks add mysql
+
+```
+
+### Remove a Feature
+
+To remove a feature from an existing microservice, use the `remove` command:
+
+```sh
+mks remove [feature]
+
+```
+
+-   `feature`: The feature you want to remove.
+
+_Example:_
+
+```sh
+mks remove mysql
+
+```
+
+## Features
+
+mks supports the following features:
+
+-   MySQL Database (mysql)
+-   gRPC Service (grpc)
+-   RabbitMQ Producer (rabbitmq-producer)
+-   RabbitMQ Consumer (rabbitmq-consumer)
+-   RabbitMQ Both (rabbitmq-both)
+-   All features (--full)
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+## Contributing
+
+Contributions are welcome! If you find any issues or would like to add new features, feel free to open an issue or submit a pull request on the GitHub repository: https://github.com/unknowns24/mks.
+
+## Acknowledgments
+
+-   The CLI is built using the Cobra library: https://github.com/spf13/cobra
