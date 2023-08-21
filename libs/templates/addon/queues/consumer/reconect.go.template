@@ -6,7 +6,7 @@ import (
 )
 
 func handleConnectionLost(minTime, maxTime int) {
-	fmt.Println("[x] AMQP Server down starting recover system")
+	fmt.Println("[x] AMQP Server down, starting recover system")
 	sleepTime := minTime
 
 	for {

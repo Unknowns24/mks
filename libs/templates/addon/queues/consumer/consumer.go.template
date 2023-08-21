@@ -2,10 +2,7 @@ package queues
 
 import (
 	"context"
-	"email/src/connections"
-	"email/src/controllers"
-	pb "email/src/proto"
-	"email/src/utils"
+	"%PACKAGE_NAME%/src/utils"
 	"encoding/json"
 	"fmt"
 
@@ -96,48 +93,24 @@ func parseMessage(message amqp.Delivery) {
 		return
 	}
 
-	res, err := connections.QueueServiceClientGRPC.MessageExist(context.Background(), &pb.MessageExistReq{GlobalId: fmt.Sprint(messageInfo["global_id"])})
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	if !res.Exist {
-		message.Nack(false, false)
-		return
-	}
-
-	// Check if message was already processed
-	if res.State != 0 && res.State != 4 {
-		return
-	}
-
-	// Sign message as processed
-	_, err = connections.QueueServiceClientGRPC.UpdateMessageState(context.Background(), &pb.UpdateMessageStateReq{GlobalId: fmt.Sprint(messageInfo["global_id"]), State: 1, ErrorCode: ""})
-
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
 	// Check if the global content variables exists in the message
 	if messageInfo["message"] == nil || messageInfo["event"] == nil {
 		message.Nack(false, false)
-		connections.QueueServiceClientGRPC.UpdateMessageState(context.Background(), &pb.UpdateMessageStateReq{GlobalId: fmt.Sprint(messageInfo["global_id"]), State: 2, ErrorCode: "ERRN003"})
 		fmt.Println("[x] Unreadable message content, queue msg id: " + messageInfo["global_id"].(string))
 		return
 	}
 
 	// Parsing message data structure
-	switch messageInfo["event"] {
-	case "email.send":
-		controllers.SendEmail(message, messageInfo["global_id"].(string))
+	/* 
+		switch messageInfo["event"] {
+		
+		case "email.send":
+			controllers.SendEmail(message, messageInfo["global_id"].(string))
 
-	default:
-		message.Nack(false, false)
-		connections.QueueServiceClientGRPC.UpdateMessageState(context.Background(), &pb.UpdateMessageStateReq{GlobalId: fmt.Sprint(messageInfo["global_id"]), State: 2, ErrorCode: "ERRN004"})
-		fmt.Println("[x] Unexpected event: " + messageInfo["event"].(string) + " on queue msg " + messageInfo["global_id"].(string))
+		default:
+			message.Nack(false, false)
+			fmt.Println("[x] Unexpected event: " + messageInfo["event"].(string) + " on queue msg " + messageInfo["global_id"].(string))
 
-	}
+		}
+	*/
 }
