@@ -1,0 +1,94 @@
+package main
+
+import (
+	"%PACKAGE_NAME%/src/libs"
+	"%PACKAGE_NAME%/src/routes"
+	"%PACKAGE_NAME%/src/utils"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"net"
+	"os"
+	"sync"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
+)
+
+func main() {
+	config, err := utils.LoadConfig() // Getting the ENV Values
+
+	// Cheking errors
+	if err != nil {
+		fmt.Println("[-] Fatal Error!\nCannot load config file:", err)
+		return
+	}
+
+	// Publishing the env globally for the app
+	utils.PublishCfg(config)
+
+	// Creating the app
+	app := fiber.New(fiber.Config{
+		JSONEncoder: json.Marshal,
+		JSONDecoder: json.Unmarshal,
+	})
+
+    // -=============- //
+	// - Middlewares - //
+    // -=============- //
+
+    // Cors middleware
+	app.Use(cors.New(cors.Config{
+		AllowCredentials: true,
+		AllowHeaders:     "Content-Type, Authorization",
+		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
+	}))
+
+    // Logger middleware
+	// If not exist create logs folder
+	os.Mkdir("./logs", 0755)
+
+	file, err := os.OpenFile("./logs/requests.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		defer file.Close()
+		errCreating := ioutil.WriteFile("./logs/requests.log", []byte(""), 0755)
+		if errCreating != nil {
+			log.Fatalf("error opening or creating file: %v", errCreating)
+		}
+	}
+
+	app.Use(logger.New(logger.Config{
+		Format: "[${time}] (${status}) - ${ip} | Method: ${method} | Path: ${path} | Latency: ${latency} \n",
+		Output: file,
+	}))
+
+    // Recover middleware
+	app.Use(recover.New())
+
+    // -========- //
+	// - Routes - //
+    // -========- //
+
+	// Importing routes
+	routes.Setup(app)
+
+	// Creating waitgroup
+	wg := new(sync.WaitGroup)
+
+	// Setting `wg` waitgroup routines
+	wg.Add(1)
+
+	// Starting Rest server
+	go func() {
+		err := app.Listen(utils.ENV.APP_PORT)
+		if err != nil {
+			panic(err.Error())
+		}
+		wg.Done()
+	}()
+
+	wg.Wait()
+}

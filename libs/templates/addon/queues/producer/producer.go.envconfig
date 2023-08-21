@@ -1,0 +1,5 @@
+#RabbitMQ config
+RABBIT_HOST="rabbitmq:5672"
+RABBIT_USER="root"
+RABBIT_PASS="root"
+RABBIT_EXCHANGE="myexchange.main.exchange"

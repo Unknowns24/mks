@@ -1,0 +1,2 @@
+// Initialice all gRPC connections
+connections.GRPC_InitialiceConnections()

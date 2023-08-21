@@ -1,0 +1,7 @@
+#Database config
+DB_HOST=127.0.0.1
+DB_PORT="3306"
+DB_NAME="my_db"
+DB_USER="root"
+DB_PASS="root"
+DB_CHAR="utf8"

@@ -1,0 +1,7 @@
+// RabbitMQ config
+RABBIT_HOST string `mapstructure:"RABBIT_HOST"`
+RABBIT_USER string `mapstructure:"RABBIT_USER"`
+RABBIT_PASS string `mapstructure:"RABBIT_PASS"`
+
+// RabbitMQ exchanges
+RABBIT_EXCHANGE_MYSERVICE string `mapstructure:"RABBIT_MYSERVICE_EXCHANGE"`

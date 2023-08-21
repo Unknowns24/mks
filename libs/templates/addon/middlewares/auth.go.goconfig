@@ -1,0 +1,1 @@
+APP_JWT_KEY   string `mapstructure:"APP_JWT_TOKEN"`

@@ -1,0 +1,1 @@
+APP_JWT_TOKEN="secret" ==> sure is the same along all microservices

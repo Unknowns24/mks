@@ -1,0 +1,17 @@
+go func() {
+    listener, err := net.Listen("tcp", utils.ENV.APP_GRPC_PORT)
+    if err != nil {
+        panic(fmt.Sprintf("cannot create tcp connection \nError:\n%s", err.Error()))
+    }
+
+    gRPCServer := grpc.NewServer()
+
+    pb.RegisterMyserviceServiceServer(gRPCServer, &controllers.Server{})
+
+    err = gRPCServer.Serve(listener)
+    if err != nil {
+        panic(fmt.Sprintf("cannot initialize grpc server \nError:\n%s", err.Error()))
+    }
+
+    wg.Done()
+}()

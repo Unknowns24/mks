@@ -1,0 +1,12 @@
+// Setting database connection data
+dbCfg := libs.DbConfig{
+    Host:     utils.ENV.DB_HOST,
+    Port:     utils.ENV.DB_PORT,
+    Database: utils.ENV.DB_NAME,
+    User:     utils.ENV.DB_USER,
+    Password: utils.ENV.DB_PASSWORD,
+    Charset:  utils.ENV.DB_CHARSET,
+}
+
+// Opening the database connection
+libs.DB = dbCfg.InitMysqlDB()
