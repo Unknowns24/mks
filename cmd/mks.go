@@ -9,7 +9,7 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "mks",
-	Short: "Microservice generator CLI",
+	Short: "Microservice manager CLI",
 }
 
 func Execute() {
