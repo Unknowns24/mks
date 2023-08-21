@@ -1,0 +1,96 @@
+package queues
+
+import (
+	"%PACKAGE_NAME%/src/connections"
+	"%PACKAGE_NAME%/src/utils"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+
+	amqp "github.com/rabbitmq/amqp091-go"
+)
+
+/*
+	SendMessage will send a message via AMQP to the specified exchange
+
+	event is the event wich will be sended on message global structure
+
+	deliveryMode specifies if event will be persistent or transient
+
+	keepTrying make message keep trying on error attempt with a backOff (allways return a nil error)
+*/
+func SendMessage(exchange, event string, deliveryMode uint8, keepTrying bool, messageData map[string]interface{}) error {
+	if deliveryMode != amqp.Persistent && deliveryMode != amqp.Transient {
+		return errors.New("{\"message\": \"Invalid message deliveryMode received\"}")
+	}
+
+	// Initializing Advanced message queuing protocol connection
+	conn, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s/", utils.ENV.RABBIT_USER, utils.ENV.RABBIT_PASS, utils.ENV.RABBIT_HOST))
+
+	// Validate connection
+	if err != nil && !keepTrying {
+		return errors.New("{\"message\": \"Error while Initializing RabbitMQ connection\"}")
+	}
+
+	if err != nil && keepTrying {
+		handlePublisConnErr(queueMessage{
+			exchange:     exchange,
+			event:        event,
+			deliveryMode: deliveryMode,
+			messageData:  messageData,
+		})
+
+		return nil
+	}
+
+	defer conn.Close()
+
+	// Validate connection to channel
+	ch, err := conn.Channel()
+
+	if err != nil && !keepTrying {
+		return errors.New("{\"message\": \"Error while Initializing RabbitMQ connection\"}")
+	}
+
+	if err != nil && keepTrying {
+		handlePublisConnErr(queueMessage{
+			exchange:     exchange,
+			event:        event,
+			deliveryMode: deliveryMode,
+			messageData:  messageData,
+		})
+
+		return nil
+	}
+
+	defer ch.Close()
+
+	// Creating global message structure
+	message := map[string]interface{}{
+		"global_id": res.GlobalId,
+		"exchange":  exchange,
+		"event":     event,
+		"message":   messageData,
+	}
+
+	value, err := json.Marshal(message)
+	if err != nil {
+		return errors.New("{\"message\": \"Message data couldn't be converted to json\"}")
+	}
+
+	err = ch.PublishWithContext(context.Background(), exchange, "", false, false, amqp.Publishing{
+		DeliveryMode: deliveryMode,
+		Headers:      nil,
+		ContentType:  "application/json",
+		Body:         []byte(value),
+	})
+
+	if err != nil {
+		return errors.New("{\"message\": \"Cannot publish message on Rabbit\"}")
+	}
+
+	fmt.Printf("Message sended to %s exchange with the ID: %s\n", exchange, res.GlobalId)
+
+	return nil
+}

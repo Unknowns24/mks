@@ -1,0 +1,42 @@
+package middlewares
+
+import (
+	"%PACKAGE_NAME%/src/utils"
+	"strconv"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
+)
+
+func IsAuthenticated(c *fiber.Ctx) error {
+	cookie := c.Cookies("jwt")
+
+	token, err := jwt.Parse(cookie, func(token *jwt.Token) (interface{}, error) {
+		return []byte(utils.ENV.APP_JWT_KEY), nil
+	})
+
+	if err != nil || !token.Valid {
+		c.Status(fiber.StatusUnauthorized)
+		return c.SendString("{\"message\": \"Invalid JWT\"}")	
+	}
+
+	claims := token.Claims.(jwt.MapClaims)
+
+	data := claims["data"].(map[string]interface{})
+	ip := data["ip"].(string)
+
+	id, err := strconv.ParseUint(claims["iss"].(string), 10, 32)
+
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.SendString("{\"message\": \"Invalid JWT\"}")
+	}
+
+	if id == 0 || (ip != c.Get("User-Ip", c.IP())) {
+		c.Status(fiber.StatusUnauthorized)
+		return c.SendString("{\"message\": \"The user in the JWT is Invalid\"}")
+	}
+
+	c.Context().SetUserValue("userId", uint(id))
+	return c.Next()
+}

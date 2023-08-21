@@ -1,0 +1,14 @@
+package routes
+
+import (
+	"%PACKAGE_NAME%/src/controllers"
+
+	"github.com/gofiber/fiber/v2"
+)
+
+func Setup(app *fiber.App) {
+	api := app.Group("/api/v1")
+
+	api.Get("/test", controllers.Test)
+	api.Post("/testRoute", controllers.TestRoute)
+}

@@ -27,7 +27,7 @@ mks build [name] --[features]
 _Example:_
 
 ```sh
-mks build ms_apps --mysql --grpc --rabbitmq-both
+mks build ms_apps --mysql --grpc-sv --rabbitmq-both
 
 ```
 
@@ -72,10 +72,12 @@ mks remove mysql
 mks supports the following features:
 
 -   MySQL Database (mysql)
--   gRPC Service (grpc)
--   RabbitMQ Producer (rabbitmq-producer)
--   RabbitMQ Consumer (rabbitmq-consumer)
--   RabbitMQ Both (rabbitmq-both)
+-   gRPC Client (grpc-cl)
+-   gRPC Server (grpc-sv)
+-   RabbitMQ Producer (rmq-producer)
+-   RabbitMQ Consumer (rmq-consumer)
+-   RabbitMQ Both (rmq-both)
+-   Jason Web Token Auth (jwt)
 -   All features (--full)
 
 ## License

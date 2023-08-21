@@ -1,0 +1,58 @@
+package utils
+
+import "github.com/spf13/viper"
+
+var ENV Config
+
+// All app config is stored in this structure
+// The values are read by viper from a config file or enviroment variables
+
+type Config struct {
+	// General config
+	APP_PORT      string `mapstructure:"APP_PORT"`
+	APP_GRPC_PORT string `mapstructure:"APP_GRPC_PORT"`
+
+	// gRPC
+	AUTH_GRPC_HOST  string `mapstructure:"AUTH_GRPC_HOST"`
+	AUTH_GRPC_PORT  string `mapstructure:"AUTH_GRPC_PORT"`
+
+	// Database config
+	DB_HOST     string `mapstructure:"DB_HOST"`
+	DB_PORT     string `mapstructure:"DB_PORT"`
+	DB_NAME     string `mapstructure:"DB_NAME"`
+	DB_USER     string `mapstructure:"DB_USER"`
+	DB_PASSWORD string `mapstructure:"DB_PASS"`
+	DB_CHARSET  string `mapstructure:"DB_CHAR"`
+
+	// RabbitMQ config
+	RABBIT_HOST string `mapstructure:"RABBIT_HOST"`
+	RABBIT_USER string `mapstructure:"RABBIT_USER"`
+	RABBIT_PASS string `mapstructure:"RABBIT_PASS"`
+
+	// RabbitMQ exchanges
+	RABBIT_EXCHANGE_PRODUCTS string `mapstructure:"RABBIT_PRODUCTS_EXCHANGE"`
+}
+
+// LoadConfig reads configuration from file or enviroment variables
+func LoadConfig() (config Config, err error) {
+	viper.AddConfigPath("./")
+	viper.AddConfigPath("./..")
+	viper.AddConfigPath("/")
+	viper.AddConfigPath("/..")
+	viper.SetConfigName("app")
+	viper.SetConfigType("env")
+
+	viper.AutomaticEnv()
+
+	err = viper.ReadInConfig()
+	if err != nil {
+		return
+	}
+
+	err = viper.Unmarshal(&config)
+	return
+}
+
+func PublishCfg(c Config) {
+	ENV = c
+}
