@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/unknowns24/mks/libs/generator"
+	"github.com/unknowns24/mks/manager"
 )
 
 func NewAddCmd() *cobra.Command {
@@ -13,7 +13,7 @@ func NewAddCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serviceName := args[0]
 			feature := args[1]
-			return generator.AddFeature(serviceName, feature)
+			return manager.AddFeature(serviceName, feature)
 		},
 	}
 

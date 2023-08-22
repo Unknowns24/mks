@@ -2,22 +2,23 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/unknowns24/mks/libs/generator"
+	"github.com/unknowns24/mks/manager"
 )
 
 func NewBuildCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "build [name]",
-		Short: "Create a microservice with custom fetures",
+		Short: "Create a microservice with custom features",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serviceName := args[0]
-			full, _ := cmd.Flags().GetBool("full")
-			return generator.GenerateMicroservice(serviceName, full)
+			features, _ := cmd.Flags().GetStringSlice("features")
+			return manager.GenerateMicroservice(serviceName, features)
 		},
 	}
 
-	cmd.Flags().Bool("full", false, "Generate microservice with all features")
+	cmd.Flags().StringSlice("features", []string{}, "Features required for the microservice")
+	cmd.MarkFlagRequired("features")
 
 	return cmd
 }

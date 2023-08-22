@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/unknowns24/mks/libs/generator"
+	"github.com/unknowns24/mks/manager"
 )
 
 func NewRemoveCmd() *cobra.Command {
@@ -13,7 +13,7 @@ func NewRemoveCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serviceName := args[0]
 			feature := args[1]
-			return generator.RemoveFeature(serviceName, feature)
+			return manager.RemoveFeature(serviceName, feature)
 		},
 	}
 
