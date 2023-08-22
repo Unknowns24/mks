@@ -27,7 +27,7 @@ mks build [name] --[features]
 _Example:_
 
 ```sh
-mks build ms_apps --mysql --grpc-sv --rabbitmq-both
+mks build ms_apps --features="mysql,jwt"
 
 ```
 
@@ -76,9 +76,8 @@ mks supports the following features:
 -   gRPC Server (grpc-sv)
 -   RabbitMQ Producer (rmq-producer)
 -   RabbitMQ Consumer (rmq-consumer)
--   RabbitMQ Both (rmq-both)
 -   Jason Web Token Auth (jwt)
--   All features (--full)
+-   All features (all)
 
 ## License
 
