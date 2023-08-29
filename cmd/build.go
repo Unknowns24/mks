@@ -18,7 +18,6 @@ func NewBuildCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringSlice("features", []string{}, "Features required for the microservice")
-	cmd.MarkFlagRequired("features")
 
 	return cmd
 }

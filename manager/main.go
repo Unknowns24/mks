@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strings"
 
 	"github.com/unknowns24/mks/utils"
 )
@@ -62,20 +61,9 @@ func createBaseFiles(basePath, serviceName string) error {
 
 	// Create main.go using template
 	mainTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "main.go.template")
-
-	mainTemplateContent, err := os.ReadFile(mainTemplatePath)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	// Replace placeholders with the actual service name
-	mainContent := strings.ReplaceAll(string(mainTemplateContent), "%PACKAGE_NAME%", serviceName)
-
 	mainPath := filepath.Join(basePath, "main.go")
-	if err := os.WriteFile(mainPath, []byte(mainContent), os.ModePerm); err != nil {
-		return err
-	}
+
+	utils.CreateFileFromTemplate(basePath, mainTemplatePath, serviceName, mainPath)
 
 	/**************
 	* UTILS FILES *
@@ -89,33 +77,15 @@ func createBaseFiles(basePath, serviceName string) error {
 
 	// Create utils/config.go using template
 	configTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "utils", "config.go.template")
-	configTemplateContent, err := os.ReadFile(configTemplatePath)
-	if err != nil {
-		return err
-	}
-
-	// Replace placeholders with the actual service name
-	configContent := strings.ReplaceAll(string(configTemplateContent), "%PACKAGE_NAME%", serviceName)
-
 	configPath := filepath.Join(utilsPath, "config.go")
-	if err := os.WriteFile(configPath, []byte(configContent), os.ModePerm); err != nil {
-		return err
-	}
+
+	utils.CreateFileFromTemplate(basePath, configTemplatePath, serviceName, configPath)
 
 	// Create utils/request.go using template
 	requestTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "utils", "request.go.template")
-	requestTemplateContent, err := os.ReadFile(requestTemplatePath)
-	if err != nil {
-		return err
-	}
-
-	// Replace placeholders with the actual service name
-	requestContent := strings.ReplaceAll(string(requestTemplateContent), "%PACKAGE_NAME%", serviceName)
-
 	requestPath := filepath.Join(utilsPath, "request.go")
-	if err := os.WriteFile(requestPath, []byte(requestContent), os.ModePerm); err != nil {
-		return err
-	}
+
+	utils.CreateFileFromTemplate(basePath, requestTemplatePath, serviceName, requestPath)
 
 	/**************
 	* ROUTES FILE *
@@ -129,18 +99,9 @@ func createBaseFiles(basePath, serviceName string) error {
 
 	// Create routes/mainRoutes.go using template
 	routesTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "routes", "mainRoutes.go.template")
-	routesTemplateContent, err := os.ReadFile(routesTemplatePath)
-	if err != nil {
-		return err
-	}
-
-	// Replace placeholders with the actual service name
-	routesContent := strings.ReplaceAll(string(routesTemplateContent), "%PACKAGE_NAME%", serviceName)
-
 	routesFilePath := filepath.Join(routesPath, "mainRoutes.go")
-	if err := os.WriteFile(routesFilePath, []byte(routesContent), os.ModePerm); err != nil {
-		return err
-	}
+
+	utils.CreateFileFromTemplate(basePath, routesTemplatePath, serviceName, routesFilePath)
 
 	/***********
 	* COMMANDS *
