@@ -16,12 +16,7 @@ import (
 )
 
 func EndOutPut(str string) (res string) {
-	if ENV.APP_DEBUG {
-		return str
-	}
-
-	str = base64.StdEncoding.EncodeToString([]byte(str))
-	return "{\"data\": \"" + str + "\"}"
+	return str
 }
 
 func BodyParser(c *fiber.Ctx) (map[string]string, error) {
