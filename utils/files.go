@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func CreateFileFromTemplate(basePath, templatePath, serviceName, finalPath string) error {
+func CreateFileFromTemplate(templatePath, serviceName, finalPath string) error {
 	// Read template content
 	templateContent, err := os.ReadFile(templatePath)
 	if err != nil {
