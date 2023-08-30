@@ -17,7 +17,7 @@ go install github.com/unknowns24/mks
 To create a basic microservice structure, use the `build` command:
 
 ```sh
-mks build [name] --[features]
+mks build [name] --features=[features]
 
 ```
 
