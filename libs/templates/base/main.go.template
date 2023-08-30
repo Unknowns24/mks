@@ -1,14 +1,12 @@
 package main
 
 import (
-	"%PACKAGE_NAME%/src/libs"
 	"%PACKAGE_NAME%/src/routes"
 	"%PACKAGE_NAME%/src/utils"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net"
 	"os"
 	"sync"
 
