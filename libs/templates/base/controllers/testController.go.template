@@ -1,0 +1,39 @@
+package controllers
+
+import (
+	"%PACKAGE_NAME%/src/utils"
+
+	"github.com/gofiber/fiber/v2"
+)
+
+func TestGet(c *fiber.Ctx) error {
+	// parse body content
+	jsonData, err := utils.BodyParser(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+
+	// verify needed params
+	if jsonData["param1"] == "" {
+		return c.Status(fiber.StatusBadRequest).SendString(utils.EndOutPut("{\"message\": \"ERROR!\"}"))
+	}
+
+	// Implement test get function
+	return nil
+}
+
+func TestPost(c *fiber.Ctx) error {
+	// parse body content
+	jsonData, err := utils.BodyParser(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+
+	// verify needed params
+	if jsonData["param1"] == "" {
+		return c.Status(fiber.StatusBadRequest).SendString(utils.EndOutPut("{\"message\": \"ERROR!\"}"))
+	}
+
+	// Implement test get function
+	return nil
+}
