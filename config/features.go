@@ -1,5 +1,7 @@
 package config
 
+const ALL_FEATURES = "all"
+
 var Features = [...]string{
 	"all",
 	"jwt",

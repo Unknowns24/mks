@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/unknowns24/mks/config"
 	"github.com/unknowns24/mks/utils"
 )
 
@@ -63,7 +64,7 @@ func GenerateMicroservice(serviceName string, verbose bool, features []string) e
 		}
 
 		// Check if "all" features are requested
-		if utils.SliceContainsElement(features, "all") {
+		if utils.SliceContainsElement(features, config.ALL_FEATURES) {
 			// Add all available features to the microservice
 			err := AddAllFeatures(basePath)
 			if err != nil {
@@ -113,10 +114,10 @@ func createBaseFiles(basePath, serviceName string, verbose bool) error {
 		fmt.Println("[+] Creating main.go file..")
 	}
 
-	mainTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "main.go.template")
-	mainPath := filepath.Join(srcPath, "main.go")
+	mainTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "main.template")
+	mainFinalPath := filepath.Join(srcPath, "main.go")
 
-	err := utils.CreateFileFromTemplate(mainTemplatePath, serviceName, mainPath)
+	err := utils.CreateFileFromTemplate(mainTemplatePath, serviceName, mainFinalPath)
 	if err != nil {
 		return err
 	}
@@ -142,10 +143,10 @@ func createBaseFiles(basePath, serviceName string, verbose bool) error {
 		fmt.Println("[+] Creating utils/config.go file..")
 	}
 
-	configTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "utils", "config.go.template")
-	configPath := filepath.Join(utilsPath, "config.go")
+	configTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "utils", "config.template")
+	configFinalPath := filepath.Join(utilsPath, "config.go")
 
-	err = utils.CreateFileFromTemplate(configTemplatePath, serviceName, configPath)
+	err = utils.CreateFileFromTemplate(configTemplatePath, serviceName, configFinalPath)
 	if err != nil {
 		return err
 	}
@@ -156,10 +157,10 @@ func createBaseFiles(basePath, serviceName string, verbose bool) error {
 		fmt.Println("[+] Creating utils/request.go file..")
 	}
 
-	requestTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "utils", "request.go.template")
-	requestPath := filepath.Join(utilsPath, "request.go")
+	requestTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "utils", "request.template")
+	requestFinalPath := filepath.Join(utilsPath, "request.go")
 
-	err = utils.CreateFileFromTemplate(requestTemplatePath, serviceName, requestPath)
+	err = utils.CreateFileFromTemplate(requestTemplatePath, serviceName, requestFinalPath)
 	if err != nil {
 		return err
 	}
@@ -185,10 +186,10 @@ func createBaseFiles(basePath, serviceName string, verbose bool) error {
 		fmt.Println("[+] Creating routes/mainRoutes.go file..")
 	}
 
-	routesTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "routes", "mainRoutes.go.template")
-	routesFilePath := filepath.Join(routesPath, "mainRoutes.go")
+	routesTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "routes", "mainRoutes.template")
+	routesFinalPath := filepath.Join(routesPath, "mainRoutes.go")
 
-	err = utils.CreateFileFromTemplate(routesTemplatePath, serviceName, routesFilePath)
+	err = utils.CreateFileFromTemplate(routesTemplatePath, serviceName, routesFinalPath)
 	if err != nil {
 		return err
 	}
@@ -214,10 +215,10 @@ func createBaseFiles(basePath, serviceName string, verbose bool) error {
 		fmt.Println("[+] Creating controllers/testController.go file..")
 	}
 
-	controllerTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "controllers", "testController.go.template")
-	controllerFilePath := filepath.Join(controllersPath, "testController.go")
+	controllerTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "controllers", "testController.template")
+	controllerFinalPath := filepath.Join(controllersPath, "testController.go")
 
-	err = utils.CreateFileFromTemplate(controllerTemplatePath, serviceName, controllerFilePath)
+	err = utils.CreateFileFromTemplate(controllerTemplatePath, serviceName, controllerFinalPath)
 	if err != nil {
 		return err
 	}
