@@ -1,7 +1,6 @@
 package queues
 
 import (
-	"%PACKAGE_NAME%/src/connections"
 	"%PACKAGE_NAME%/src/utils"
 	"context"
 	"encoding/json"
