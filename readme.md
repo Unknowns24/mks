@@ -49,24 +49,6 @@ mks add mysql
 
 ```
 
-### Remove a Feature
-
-To remove a feature from an existing microservice, use the `remove` command:
-
-```sh
-mks remove [feature]
-
-```
-
--   `feature`: The feature you want to remove.
-
-_Example:_
-
-```sh
-mks remove mysql
-
-```
-
 ## Features
 
 mks supports the following features:

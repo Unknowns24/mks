@@ -20,5 +20,4 @@ func Execute() {
 func init() {
 	rootCmd.AddCommand(NewBuildCmd())
 	rootCmd.AddCommand(NewAddCmd())
-	rootCmd.AddCommand(NewRemoveCmd())
 }
