@@ -7,17 +7,16 @@ import (
 
 func NewAddCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "add [name] [feature]",
+		Use:   "add [feature]",
 		Short: "Add a feature to a microservice",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			serviceName := args[0]
 			feature := args[1]
-			return manager.AddFeature(serviceName, feature)
+			return manager.AddFeature(feature)
 		},
 	}
 
-	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose mode")
+	cmd.Flags().BoolVarP(&manager.Verbose, "verbose", "v", false, "Enable verbose mode")
 
 	return cmd
 }

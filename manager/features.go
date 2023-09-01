@@ -2,9 +2,20 @@ package manager
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 )
 
-func AddFeature(basePath, feature string) error {
+func AddFeature(feature string) error {
+	// Get the current working directory
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	// Create the base path for the microservice
+	basePath := filepath.Join(currentDir, "")
+
 	switch feature {
 	case "mysql":
 		return addMySQLFeature(basePath)

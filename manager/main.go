@@ -12,8 +12,8 @@ import (
 	"github.com/unknowns24/mks/utils"
 )
 
-func GenerateMicroservice(serviceName string, verbose bool, features []string) error {
-	if verbose {
+func GenerateMicroservice(serviceName string, features []string) error {
+	if Verbose {
 		fmt.Println("[+] Creating " + serviceName + " microservice..")
 	}
 
@@ -23,7 +23,7 @@ func GenerateMicroservice(serviceName string, verbose bool, features []string) e
 		return err
 	}
 
-	if verbose {
+	if Verbose {
 		fmt.Println("[+] Creating root folder..")
 	}
 
@@ -41,25 +41,25 @@ func GenerateMicroservice(serviceName string, verbose bool, features []string) e
 		return err
 	}
 
-	if verbose {
+	if Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating base files..")
 	}
 
 	// Create all base files
-	err = createBaseFiles(basePath, serviceName, verbose)
+	err = createBaseFiles(basePath, serviceName)
 	if err != nil {
 		return err
 	}
 
 	// Install all base packages
-	err = installBasePackages(basePath, verbose)
+	err = installBasePackages(basePath)
 	if err != nil {
 		return err
 	}
 
 	if len(features) >= 1 {
-		if verbose {
+		if Verbose {
 			fmt.Println("[+] Checking requested features..")
 		}
 
@@ -73,7 +73,7 @@ func GenerateMicroservice(serviceName string, verbose bool, features []string) e
 		} else {
 			// Add specified features to the microservice
 			for _, feature := range features {
-				err := AddFeature(basePath, feature)
+				err := AddFeature(feature)
 				if err != nil {
 					return err
 				}
@@ -88,7 +88,7 @@ func GenerateMicroservice(serviceName string, verbose bool, features []string) e
 	return nil
 }
 
-func createBaseFiles(basePath, serviceName string, verbose bool) error {
+func createBaseFiles(basePath, serviceName string) error {
 	// Get the directory path of the current file (generator.go)
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -110,7 +110,7 @@ func createBaseFiles(basePath, serviceName string, verbose bool) error {
 	*************/
 
 	// Create main.go using template
-	if verbose {
+	if Verbose {
 		fmt.Println("[+] Creating main.go file..")
 	}
 
@@ -127,7 +127,7 @@ func createBaseFiles(basePath, serviceName string, verbose bool) error {
 	***************/
 
 	// Create the utils path for the required base files
-	if verbose {
+	if Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating utils files directory..")
 	}
@@ -138,7 +138,7 @@ func createBaseFiles(basePath, serviceName string, verbose bool) error {
 	}
 
 	// Create utils/config.go using template
-	if verbose {
+	if Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating utils/config.go file..")
 	}
@@ -152,7 +152,7 @@ func createBaseFiles(basePath, serviceName string, verbose bool) error {
 	}
 
 	// Create utils/request.go using template
-	if verbose {
+	if Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating utils/request.go file..")
 	}
@@ -170,7 +170,7 @@ func createBaseFiles(basePath, serviceName string, verbose bool) error {
 	**************/
 
 	// Create the routes path for the required base files
-	if verbose {
+	if Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating routes files directory..")
 	}
@@ -181,7 +181,7 @@ func createBaseFiles(basePath, serviceName string, verbose bool) error {
 	}
 
 	// Create routes/mainRoutes.go using template
-	if verbose {
+	if Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating routes/mainRoutes.go file..")
 	}
@@ -199,7 +199,7 @@ func createBaseFiles(basePath, serviceName string, verbose bool) error {
 	*******************/
 
 	// Create the routes path for the required base files
-	if verbose {
+	if Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating controllers files directory..")
 	}
@@ -210,7 +210,7 @@ func createBaseFiles(basePath, serviceName string, verbose bool) error {
 	}
 
 	// Create controllers/testController.go using template
-	if verbose {
+	if Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating controllers/testController.go file..")
 	}
@@ -228,7 +228,7 @@ func createBaseFiles(basePath, serviceName string, verbose bool) error {
 	***************/
 
 	// Create Dockerfile using template
-	if verbose {
+	if Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating Dockerfile file..")
 	}
@@ -246,7 +246,7 @@ func createBaseFiles(basePath, serviceName string, verbose bool) error {
 	************/
 
 	// Execute "go mod init" command in the basePath directory
-	if verbose {
+	if Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Running go mod init..")
 	}
@@ -257,15 +257,15 @@ func createBaseFiles(basePath, serviceName string, verbose bool) error {
 		return err
 	}
 
-	if verbose {
+	if Verbose {
 		fmt.Println("[+] Base files created successfully.")
 	}
 
 	return nil
 }
 
-func installBasePackages(basePath string, verbose bool) error {
-	if verbose {
+func installBasePackages(basePath string) error {
+	if Verbose {
 		fmt.Println("[+] Installing base packages..")
 	}
 
