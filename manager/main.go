@@ -74,7 +74,7 @@ func GenerateMicroservice(serviceSelectedName string, features []string) error {
 		// Check if "all" features are requested
 		if utils.SliceContainsElement(features, config.ALL_FEATURES) {
 			// Add all available features to the microservice
-			err := AddAllFeatures(basePath)
+			err := AddAllFeatures()
 			if err != nil {
 				return err
 			}

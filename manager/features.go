@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/unknowns24/mks/config"
 	"github.com/unknowns24/mks/utils"
 )
 
 func AddFeature(feature string) error {
 	var err error
 
+	// If global variable basePath is empty fill it
 	if basePath == "" {
 		// Get the current working directory
 		basePath, err = os.Getwd()
@@ -18,6 +20,7 @@ func AddFeature(feature string) error {
 		}
 	}
 
+	// If global variable serviceName is empty fill it
 	if serviceName == "" {
 		// Get Mircoservice module name
 		serviceName, err = utils.GetThisModuleName()
@@ -27,60 +30,60 @@ func AddFeature(feature string) error {
 	}
 
 	switch feature {
-	case "mysql":
-		return addMySQLFeature(basePath)
-	case "jwt":
-		return addJWTFeature(basePath)
-	case "rmq-producer":
-		return addRMQProducerFeature(basePath)
-	case "rmq-consumer":
-		return addRMQConsumerFeature(basePath)
-	case "grpc-sv":
-		return addSvGRPCFeature(basePath)
-	case "grpc-cl":
-		return addClGRPCFeature(basePath)
+	case config.FEATURE_JWT:
+		return addJWTFeature()
+	case config.FEATURE_MYSQL:
+		return addMySQLFeature()
+	case config.FEATURE_GRPC_SERVER:
+		return addGrpcServerFeature()
+	case config.FEATURE_GRPC_CLIENT:
+		return addGrpcClientFeature()
+	case config.FEATURE_RMQ_PRODUCER:
+		return addRMQProducerFeature()
+	case config.FEATURE_RMQ_CONSUMER:
+		return addRMQConsumerFeature()
 	default:
 		return fmt.Errorf("unknown feature: %s", feature)
 	}
 }
 
-func AddAllFeatures(basePath string) error {
+func AddAllFeatures() error {
 	// Implement logic to add MySQL feature
 	// Prompt the user for host, user, password, and database details
 	return nil
 }
 
-func addRMQProducerFeature(basePath string) error {
+func addRMQProducerFeature() error {
 	// Implement logic to add RMQ feature
 	// You can use templates or generate necessary files here
 	return nil
 }
 
-func addRMQConsumerFeature(basePath string) error {
+func addRMQConsumerFeature() error {
 	// Implement logic to add RMQ feature
 	// You can use templates or generate necessary files here
 	return nil
 }
 
-func addSvGRPCFeature(basePath string) error {
+func addGrpcServerFeature() error {
 	// Implement logic to add gRPC feature
 	// You can use templates or generate necessary files here
 	return nil
 }
 
-func addClGRPCFeature(basePath string) error {
+func addGrpcClientFeature() error {
 	// Implement logic to add gRPC feature
 	// You can use templates or generate necessary files here
 	return nil
 }
 
-func addMySQLFeature(basePath string) error {
+func addMySQLFeature() error {
 	// Implement logic to add MySQL feature
 	// Prompt the user for host, user, password, and database details
 	return nil
 }
 
-func addJWTFeature(basePath string) error {
+func addJWTFeature() error {
 	// Implement logic to add JWT feature
 	// Prompt the user for JWT configuration details
 	return nil
