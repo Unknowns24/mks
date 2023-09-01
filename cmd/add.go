@@ -18,7 +18,7 @@ func NewAddCmd() *cobra.Command {
 
 			// Validate feature argument
 			if !manager.IsValidFeature(feature) {
-				return fmt.Errorf("unknown feature. Valid features are: %s", config.Features[:])
+				return fmt.Errorf("unknown feature '%s'. Valid features are: %s", feature, config.Features[:])
 			}
 
 			return manager.AddFeature(feature)
