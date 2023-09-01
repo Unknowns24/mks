@@ -24,3 +24,19 @@ func CreateFileFromTemplate(templatePath, serviceName, finalPath string) error {
 
 	return nil
 }
+
+func findClosingBrace(lines []string, startIndex int) int {
+	braceCount := 0
+
+	for i := startIndex; i < len(lines); i++ {
+		line := lines[i]
+		braceCount += strings.Count(line, "{")
+		braceCount -= strings.Count(line, "}")
+
+		if braceCount == 0 {
+			return i
+		}
+	}
+
+	return -1
+}
