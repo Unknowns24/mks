@@ -12,7 +12,15 @@ import (
 	"github.com/unknowns24/mks/utils"
 )
 
-func GenerateMicroservice(serviceName string, features []string) error {
+var (
+	basePath    = "" // Current microservice inside path
+	serviceName = "" // Current microservice module name
+)
+
+func GenerateMicroservice(serviceSelectedName string, features []string) error {
+	// making serviceSelectedName global
+	serviceName = serviceSelectedName
+
 	if Verbose {
 		fmt.Println("[+] Creating " + serviceName + " microservice..")
 	}
@@ -28,7 +36,7 @@ func GenerateMicroservice(serviceName string, features []string) error {
 	}
 
 	// Create the base path for the microservice
-	basePath := filepath.Join(currentDir, serviceName)
+	basePath = filepath.Join(currentDir, serviceName)
 
 	// Check if the microservice already was created
 	_, dirErr := os.Stat(basePath)
@@ -47,13 +55,13 @@ func GenerateMicroservice(serviceName string, features []string) error {
 	}
 
 	// Create all base files
-	err = createBaseFiles(basePath, serviceName)
+	err = createBaseFiles()
 	if err != nil {
 		return err
 	}
 
 	// Install all base packages
-	err = installBasePackages(basePath)
+	err = installBasePackages()
 	if err != nil {
 		return err
 	}
@@ -88,7 +96,7 @@ func GenerateMicroservice(serviceName string, features []string) error {
 	return nil
 }
 
-func createBaseFiles(basePath, serviceName string) error {
+func createBaseFiles() error {
 	// Get the directory path of the current file (generator.go)
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -264,7 +272,7 @@ func createBaseFiles(basePath, serviceName string) error {
 	return nil
 }
 
-func installBasePackages(basePath string) error {
+func installBasePackages() error {
 	if Verbose {
 		fmt.Println("[+] Installing base packages..")
 	}
