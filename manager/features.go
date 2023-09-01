@@ -8,6 +8,19 @@ import (
 	"github.com/unknowns24/mks/utils"
 )
 
+func IsValidFeature(feature string) bool {
+	valid := false
+
+	for _, validFeature := range config.Features {
+		if feature == validFeature {
+			valid = true
+			break
+		}
+	}
+
+	return valid
+}
+
 func AddFeature(feature string) error {
 	var err error
 

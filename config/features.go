@@ -10,7 +10,6 @@ const FEATURE_RMQ_PRODUCER = "rmq-producer"
 const FEATURE_RMQ_CONSUMER = "rmq-consumer"
 
 var Features = [...]string{
-	ALL_FEATURES,
 	FEATURE_JWT,
 	FEATURE_MYSQL,
 	FEATURE_GRPC_CLIENT,
