@@ -28,7 +28,7 @@ func NewBuildCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVarP(&manager.Verbose, "verbose", "v", false, "Enable verbose mode")
+	cmd.Flags().BoolVarP(&config.Verbose, "verbose", "v", false, "Enable verbose mode")
 	cmd.Flags().StringSlice("features", []string{}, "Features required for the microservice")
 
 	return cmd

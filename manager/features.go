@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/unknowns24/mks/config"
+	"github.com/unknowns24/mks/libs/addons"
 	"github.com/unknowns24/mks/utils"
 )
 
@@ -44,60 +45,51 @@ func AddFeature(feature string) error {
 
 	switch feature {
 	case config.FEATURE_JWT:
-		return addJWTFeature()
+		return addons.InstallJWT()
 	case config.FEATURE_MYSQL:
-		return addMySQLFeature()
+		return addons.InstallMySQL()
 	case config.FEATURE_GRPC_SERVER:
-		return addGrpcServerFeature()
+		return addons.InstallGrpcServer()
 	case config.FEATURE_GRPC_CLIENT:
-		return addGrpcClientFeature()
+		return addons.InstallGrpcClient()
 	case config.FEATURE_RMQ_PRODUCER:
-		return addRMQProducerFeature()
+		return addons.InstallRMQProducer()
 	case config.FEATURE_RMQ_CONSUMER:
-		return addRMQConsumerFeature()
-	default:
+		return addons.InstallRMQConsumer()
+	default: // unrechable code
 		return fmt.Errorf("unknown feature: %s", feature)
 	}
 }
 
 func AddAllFeatures() error {
-	// Implement logic to add MySQL feature
-	// Prompt the user for host, user, password, and database details
-	return nil
-}
+	// Installing JWT feature
+	if jwtErr := addons.InstallJWT(); jwtErr != nil {
+		return jwtErr
+	}
 
-func addRMQProducerFeature() error {
-	// Implement logic to add RMQ feature
-	// You can use templates or generate necessary files here
-	return nil
-}
+	// Installing MySQL feature
+	if mysqlErr := addons.InstallMySQL(); mysqlErr != nil {
+		return mysqlErr
+	}
 
-func addRMQConsumerFeature() error {
-	// Implement logic to add RMQ feature
-	// You can use templates or generate necessary files here
-	return nil
-}
+	// Installing gRPC server feature
+	if grpcSvErr := addons.InstallGrpcServer(); grpcSvErr != nil {
+		return grpcSvErr
+	}
 
-func addGrpcServerFeature() error {
-	// Implement logic to add gRPC feature
-	// You can use templates or generate necessary files here
-	return nil
-}
+	// Installing gRPC client feature
+	if grpcClErr := addons.InstallGrpcClient(); grpcClErr != nil {
+		return grpcClErr
+	}
 
-func addGrpcClientFeature() error {
-	// Implement logic to add gRPC feature
-	// You can use templates or generate necessary files here
-	return nil
-}
+	// Installing RabbitMQ producer feature
+	if rmqProdErr := addons.InstallRMQProducer(); rmqProdErr != nil {
+		return rmqProdErr
+	}
 
-func addMySQLFeature() error {
-	// Implement logic to add MySQL feature
-	// Prompt the user for host, user, password, and database details
-	return nil
-}
-
-func addJWTFeature() error {
-	// Implement logic to add JWT feature
-	// Prompt the user for JWT configuration details
+	// Installing RabbitMQ consumer feature
+	if rmqConsErr := addons.InstallRMQConsumer(); rmqConsErr != nil {
+		return rmqConsErr
+	}
 	return nil
 }

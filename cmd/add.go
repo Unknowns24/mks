@@ -29,7 +29,7 @@ func NewAddCmd() *cobra.Command {
 		SilenceUsage: true, // Suppress printing the usage message
 	}
 
-	cmd.Flags().BoolVarP(&manager.Verbose, "verbose", "v", false, "Enable verbose mode")
+	cmd.Flags().BoolVarP(&config.Verbose, "verbose", "v", false, "Enable verbose mode")
 
 	return cmd
 }

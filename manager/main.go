@@ -21,7 +21,7 @@ func GenerateMicroservice(serviceSelectedName string, features []string) error {
 	// making serviceSelectedName global
 	serviceName = serviceSelectedName
 
-	if Verbose {
+	if config.Verbose {
 		fmt.Println("[+] Creating " + serviceName + " microservice..")
 	}
 
@@ -31,7 +31,7 @@ func GenerateMicroservice(serviceSelectedName string, features []string) error {
 		return err
 	}
 
-	if Verbose {
+	if config.Verbose {
 		fmt.Println("[+] Creating root folder..")
 	}
 
@@ -49,7 +49,7 @@ func GenerateMicroservice(serviceSelectedName string, features []string) error {
 		return err
 	}
 
-	if Verbose {
+	if config.Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating base files..")
 	}
@@ -67,7 +67,7 @@ func GenerateMicroservice(serviceSelectedName string, features []string) error {
 	}
 
 	if len(features) >= 1 {
-		if Verbose {
+		if config.Verbose {
 			fmt.Println("[+] Checking requested features..")
 		}
 
@@ -118,7 +118,7 @@ func createBaseFiles() error {
 	*************/
 
 	// Create main.go using template
-	if Verbose {
+	if config.Verbose {
 		fmt.Println("[+] Creating main.go file..")
 	}
 
@@ -135,7 +135,7 @@ func createBaseFiles() error {
 	***************/
 
 	// Create the utils path for the required base files
-	if Verbose {
+	if config.Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating utils files directory..")
 	}
@@ -146,7 +146,7 @@ func createBaseFiles() error {
 	}
 
 	// Create utils/config.go using template
-	if Verbose {
+	if config.Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating utils/config.go file..")
 	}
@@ -160,7 +160,7 @@ func createBaseFiles() error {
 	}
 
 	// Create utils/request.go using template
-	if Verbose {
+	if config.Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating utils/request.go file..")
 	}
@@ -178,7 +178,7 @@ func createBaseFiles() error {
 	**************/
 
 	// Create the routes path for the required base files
-	if Verbose {
+	if config.Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating routes files directory..")
 	}
@@ -189,7 +189,7 @@ func createBaseFiles() error {
 	}
 
 	// Create routes/mainRoutes.go using template
-	if Verbose {
+	if config.Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating routes/mainRoutes.go file..")
 	}
@@ -207,7 +207,7 @@ func createBaseFiles() error {
 	*******************/
 
 	// Create the routes path for the required base files
-	if Verbose {
+	if config.Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating controllers files directory..")
 	}
@@ -218,7 +218,7 @@ func createBaseFiles() error {
 	}
 
 	// Create controllers/testController.go using template
-	if Verbose {
+	if config.Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating controllers/testController.go file..")
 	}
@@ -236,7 +236,7 @@ func createBaseFiles() error {
 	***************/
 
 	// Create Dockerfile using template
-	if Verbose {
+	if config.Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Creating Dockerfile file..")
 	}
@@ -254,7 +254,7 @@ func createBaseFiles() error {
 	************/
 
 	// Execute "go mod init" command in the basePath directory
-	if Verbose {
+	if config.Verbose {
 		time.Sleep(time.Second / 4) // sleep 250ms
 		fmt.Println("[+] Running go mod init..")
 	}
@@ -265,7 +265,7 @@ func createBaseFiles() error {
 		return err
 	}
 
-	if Verbose {
+	if config.Verbose {
 		fmt.Println("[+] Base files created successfully.")
 	}
 
@@ -273,7 +273,7 @@ func createBaseFiles() error {
 }
 
 func installBasePackages() error {
-	if Verbose {
+	if config.Verbose {
 		fmt.Println("[+] Installing base packages..")
 	}
 
