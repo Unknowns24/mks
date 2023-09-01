@@ -54,12 +54,12 @@ mks add mysql
 mks supports the following features:
 
 -   MySQL Database (mysql)
--   gRPC Client (grpc-cl)
--   gRPC Server (grpc-sv)
+-   gRPC Client (grpc-client)
+-   gRPC Server (grpc-server)
 -   RabbitMQ Producer (rmq-producer)
 -   RabbitMQ Consumer (rmq-consumer)
 -   Jason Web Token Auth (jwt)
--   All features (all)
+-   All features (all) **# Only on 'build' command**
 
 ## License
 
