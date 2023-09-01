@@ -26,18 +26,18 @@ func AddFeature(feature string) error {
 	var err error
 
 	// If global variable basePath is empty fill it
-	if basePath == "" {
+	if config.BasePath == "" {
 		// Get the current working directory
-		basePath, err = os.Getwd()
+		config.BasePath, err = os.Getwd()
 		if err != nil {
 			return err
 		}
 	}
 
 	// If global variable serviceName is empty fill it
-	if serviceName == "" {
+	if config.ServiceName == "" {
 		// Get Mircoservice module name
-		serviceName, err = utils.GetThisModuleName()
+		config.ServiceName, err = utils.GetThisModuleName()
 		if err != nil {
 			return err
 		}

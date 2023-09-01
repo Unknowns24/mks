@@ -12,14 +12,9 @@ import (
 	"github.com/unknowns24/mks/utils"
 )
 
-var (
-	basePath    = "" // Current microservice inside path
-	serviceName = "" // Current microservice module name
-)
-
-func GenerateMicroservice(serviceSelectedName string, features []string) error {
-	// making serviceSelectedName global
-	serviceName = serviceSelectedName
+func GenerateMicroservice(serviceName string, features []string) error {
+	// making serviceName global
+	config.ServiceName = serviceName
 
 	if config.Verbose {
 		fmt.Println("[+] Creating " + serviceName + " microservice..")
@@ -36,16 +31,16 @@ func GenerateMicroservice(serviceSelectedName string, features []string) error {
 	}
 
 	// Create the base path for the microservice
-	basePath = filepath.Join(currentDir, serviceName)
+	config.BasePath = filepath.Join(currentDir, serviceName)
 
 	// Check if the microservice already was created
-	_, dirErr := os.Stat(basePath)
+	_, dirErr := os.Stat(config.BasePath)
 	if !os.IsNotExist(dirErr) {
 		return errors.New(serviceName + " microservice already created!")
 	}
 
 	// Create base path directory
-	if err := os.MkdirAll(basePath, os.ModePerm); err != nil {
+	if err := os.MkdirAll(config.BasePath, os.ModePerm); err != nil {
 		return err
 	}
 
@@ -106,7 +101,7 @@ func createBaseFiles() error {
 	mksDir := filepath.Dir(filename)
 
 	// Create the src path for the microservice
-	srcPath := filepath.Join(basePath, "src")
+	srcPath := filepath.Join(config.BasePath, "src")
 
 	// Create src path directory
 	if err := os.MkdirAll(srcPath, os.ModePerm); err != nil {
@@ -125,7 +120,7 @@ func createBaseFiles() error {
 	mainTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "main.template")
 	mainFinalPath := filepath.Join(srcPath, "main.go")
 
-	err := utils.CreateFileFromTemplate(mainTemplatePath, serviceName, mainFinalPath)
+	err := utils.CreateFileFromTemplate(mainTemplatePath, config.ServiceName, mainFinalPath)
 	if err != nil {
 		return err
 	}
@@ -154,7 +149,7 @@ func createBaseFiles() error {
 	configTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "utils", "config.template")
 	configFinalPath := filepath.Join(utilsPath, "config.go")
 
-	err = utils.CreateFileFromTemplate(configTemplatePath, serviceName, configFinalPath)
+	err = utils.CreateFileFromTemplate(configTemplatePath, config.ServiceName, configFinalPath)
 	if err != nil {
 		return err
 	}
@@ -168,7 +163,7 @@ func createBaseFiles() error {
 	requestTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "utils", "request.template")
 	requestFinalPath := filepath.Join(utilsPath, "request.go")
 
-	err = utils.CreateFileFromTemplate(requestTemplatePath, serviceName, requestFinalPath)
+	err = utils.CreateFileFromTemplate(requestTemplatePath, config.ServiceName, requestFinalPath)
 	if err != nil {
 		return err
 	}
@@ -197,7 +192,7 @@ func createBaseFiles() error {
 	routesTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "routes", "mainRoutes.template")
 	routesFinalPath := filepath.Join(routesPath, "mainRoutes.go")
 
-	err = utils.CreateFileFromTemplate(routesTemplatePath, serviceName, routesFinalPath)
+	err = utils.CreateFileFromTemplate(routesTemplatePath, config.ServiceName, routesFinalPath)
 	if err != nil {
 		return err
 	}
@@ -226,7 +221,7 @@ func createBaseFiles() error {
 	controllerTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "base", "controllers", "testController.template")
 	controllerFinalPath := filepath.Join(controllersPath, "testController.go")
 
-	err = utils.CreateFileFromTemplate(controllerTemplatePath, serviceName, controllerFinalPath)
+	err = utils.CreateFileFromTemplate(controllerTemplatePath, config.ServiceName, controllerFinalPath)
 	if err != nil {
 		return err
 	}
@@ -242,9 +237,9 @@ func createBaseFiles() error {
 	}
 
 	dockerTemplatePath := filepath.Join(mksDir, "..", "libs", "templates", "docker", "Dockerfile")
-	dockerFilePath := filepath.Join(basePath, "Dockerfile")
+	dockerFilePath := filepath.Join(config.BasePath, "Dockerfile")
 
-	err = utils.CreateFileFromTemplate(dockerTemplatePath, serviceName, dockerFilePath)
+	err = utils.CreateFileFromTemplate(dockerTemplatePath, config.ServiceName, dockerFilePath)
 	if err != nil {
 		return err
 	}
@@ -260,7 +255,7 @@ func createBaseFiles() error {
 	}
 
 	// Initialice Go modules
-	err = utils.InitGoModules(serviceName, basePath)
+	err = utils.InitGoModules(config.ServiceName, config.BasePath)
 	if err != nil {
 		return err
 	}
@@ -277,7 +272,7 @@ func installBasePackages() error {
 		fmt.Println("[+] Installing base packages..")
 	}
 
-	err := utils.InstallNeededPackages(basePath)
+	err := utils.InstallNeededPackages(config.BasePath)
 	if err != nil {
 		return err
 	}
