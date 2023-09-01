@@ -3,18 +3,28 @@ package manager
 import (
 	"fmt"
 	"os"
-	"path/filepath"
+
+	"github.com/unknowns24/mks/utils"
 )
 
 func AddFeature(feature string) error {
-	// Get the current working directory
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return err
+	var err error
+
+	if basePath == "" {
+		// Get the current working directory
+		basePath, err = os.Getwd()
+		if err != nil {
+			return err
+		}
 	}
 
-	// Create the base path for the microservice
-	basePath := filepath.Join(currentDir, "")
+	if serviceName == "" {
+		// Get Mircoservice module name
+		serviceName, err = utils.GetThisModuleName()
+		if err != nil {
+			return err
+		}
+	}
 
 	switch feature {
 	case "mysql":
@@ -32,12 +42,6 @@ func AddFeature(feature string) error {
 	default:
 		return fmt.Errorf("unknown feature: %s", feature)
 	}
-}
-
-func RemoveFeature(serviceName, feature string) error {
-	// Implement logic to remove the specified feature from the microservice
-	fmt.Printf("Feature '%s' removed from microservice '%s'\n", feature, serviceName)
-	return nil
 }
 
 func AddAllFeatures(basePath string) error {
