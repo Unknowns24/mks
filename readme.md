@@ -1,10 +1,10 @@
-# mks CLI
+# MKS CLI
 
 mks is a command-line interface (CLI) tool that helps you generate basic microservices structures with different features. It allows you to quickly set up microservices projects by creating the necessary files and directories based on your requirements.
 
 ## Installation
 
-To install mks, you need to have Go installed on your system. Then, run the following command:
+To install mks, you need to have [Go](https://go.dev/doc/install) installed on your system. Then, run the following command:
 
 ```sh
 go install github.com/unknowns24/mks
