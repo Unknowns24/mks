@@ -11,7 +11,7 @@ func NewAddCmd() *cobra.Command {
 		Short: "Add a feature to a microservice",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			feature := args[1]
+			feature := args[0]
 			return manager.AddFeature(feature)
 		},
 	}
