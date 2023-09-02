@@ -1,0 +1,4 @@
+package config
+
+const PLACEHOLDER_APPPORT = "%APP_PORT%"
+const PLACEHOLDER_PACKAGENAME = "%PACKAGE_NAME%"
