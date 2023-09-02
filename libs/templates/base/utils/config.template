@@ -9,7 +9,8 @@ var ENV Config
 
 type Config struct {
 	// General config
-	APP_PORT      string `mapstructure:"APP_PORT"`
+	APP_NAME  string `mapstructure:"APP_NAME"`
+	APP_PORT  string `mapstructure:"APP_PORT"`
 }
 
 // LoadConfig reads configuration from file or enviroment variables

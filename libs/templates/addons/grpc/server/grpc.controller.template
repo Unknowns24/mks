@@ -1,0 +1,9 @@
+package controllers
+
+import (
+	pb "%PACKAGE_NAME%/src/proto"
+)
+
+type Server struct {
+	pb.Unimplemented%GRP_MY_SERVICE_NAME%Server
+}

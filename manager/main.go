@@ -242,10 +242,11 @@ func createBaseFiles() error {
 
 	// Map with all placeholders and its values to replace on .env template
 	envReplaces := map[string]string{
-		config.PLACEHOLDER_APPPORT: appPort,
+		config.PLACEHOLDER_APP_NAME: config.ServiceName,
+		config.PLACEHOLDER_APP_PORT: appPort,
 	}
 
-	appEnvTemplatePath := filepath.Join(mksDir, "..", config.FOLDER_LIBS, config.FOLDER_TEMPLATES, config.FOLDER_BASE, config.FOLDER_OTHERS, config.FILE_TEMPLATE_ENV)
+	appEnvTemplatePath := filepath.Join(mksDir, "..", config.FOLDER_LIBS, config.FOLDER_TEMPLATES, config.FOLDER_BASE, config.FOLDER_OTHERS, config.FILE_ENVCONFIG_APP)
 	appEnvExampleFinalPath := filepath.Join(config.BasePath, config.FILE_ENVEXAMPLE_CONFIG)
 
 	err = utils.CreateFileFromTemplateWithCustomReplace(appEnvTemplatePath, appEnvExampleFinalPath, envReplaces)

@@ -1,3 +1,3 @@
 // gRPC
-SERVICE_GRPC_HOST  string `mapstructure:"SERVICE_GRPC_HOST"`
-SERVICE_GRPC_PORT  string `mapstructure:"SERVICE_GRPC_PORT"`
+%GRP_SERVER_NAME%_GRPC_HOST  string `mapstructure:"%GRP_SERVER_NAME%_GRPC_HOST"`
+%GRP_SERVER_NAME%_GRPC_PORT  string `mapstructure:"%GRP_SERVER_NAME%_GRPC_PORT"`
