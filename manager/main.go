@@ -13,12 +13,10 @@ import (
 )
 
 func GenerateMicroservice(serviceName string, features []string) error {
+	fmt.Println("[+] Creating " + serviceName + " microservice..")
+
 	// making serviceName global
 	config.ServiceName = serviceName
-
-	if config.Verbose {
-		fmt.Println("[+] Creating " + config.ServiceName + " microservice..")
-	}
 
 	// Get the current working directory
 	currentDir, err := os.Getwd()
@@ -236,10 +234,21 @@ func createBaseFiles() error {
 		fmt.Println("[+] Creating app.env.example file..")
 	}
 
-	appEnvTemplatePath := filepath.Join(mksDir, "..", config.FOLDER_LIBS, config.FOLDER_TEMPLATES, config.FOLDER_BASE, config.FOLDER_OTHERS, config.FILE_ENVEXAMPLE_CONFIG)
+	// Ask the user for the desired microservice port
+	appPort, err := AskData("Set microservice port:")
+	if err != nil {
+		return err
+	}
+
+	// Map with all placeholders and its values to replace on .env template
+	envReplaces := map[string]string{
+		config.PLACEHOLDER_APPPORT: appPort,
+	}
+
+	appEnvTemplatePath := filepath.Join(mksDir, "..", config.FOLDER_LIBS, config.FOLDER_TEMPLATES, config.FOLDER_BASE, config.FOLDER_OTHERS, config.FILE_TEMPLATE_ENV)
 	appEnvExampleFinalPath := filepath.Join(config.BasePath, config.FILE_ENVEXAMPLE_CONFIG)
 
-	err = utils.CreateFileFromTemplate(appEnvTemplatePath, config.ServiceName, appEnvExampleFinalPath)
+	err = utils.CreateFileFromTemplateWithCustomReplace(appEnvTemplatePath, appEnvExampleFinalPath, envReplaces)
 	if err != nil {
 		return err
 	}
@@ -251,7 +260,7 @@ func createBaseFiles() error {
 	}
 
 	appEnvFinalPath := filepath.Join(config.BasePath, config.FILE_ENV_CONFIG)
-	err = utils.CreateFileFromTemplate(appEnvTemplatePath, config.ServiceName, appEnvFinalPath)
+	err = utils.CreateFileFromTemplateWithCustomReplace(appEnvTemplatePath, appEnvFinalPath, envReplaces)
 	if err != nil {
 		return err
 	}
