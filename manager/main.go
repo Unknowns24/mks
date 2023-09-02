@@ -226,6 +226,54 @@ func createBaseFiles() error {
 		return err
 	}
 
+	/***********
+	* ENV FILE *
+	************/
+
+	// Create app.env.example using template
+	if config.Verbose {
+		time.Sleep(time.Second / 4) // sleep 250ms
+		fmt.Println("[+] Creating app.env.example file..")
+	}
+
+	appEnvTemplatePath := filepath.Join(mksDir, "..", config.FOLDER_LIBS, config.FOLDER_TEMPLATES, config.FOLDER_BASE, config.FOLDER_OTHERS, config.FILE_ENVEXAMPLE_CONFIG)
+	appEnvExampleFinalPath := filepath.Join(config.BasePath, config.FILE_ENVEXAMPLE_CONFIG)
+
+	err = utils.CreateFileFromTemplate(appEnvTemplatePath, config.ServiceName, appEnvExampleFinalPath)
+	if err != nil {
+		return err
+	}
+
+	// Create app.env using template
+	if config.Verbose {
+		time.Sleep(time.Second / 4) // sleep 250ms
+		fmt.Println("[+] Creating app.env file..")
+	}
+
+	appEnvFinalPath := filepath.Join(config.BasePath, config.FILE_ENV_CONFIG)
+	err = utils.CreateFileFromTemplate(appEnvTemplatePath, config.ServiceName, appEnvFinalPath)
+	if err != nil {
+		return err
+	}
+
+	/*************
+	* GIT IGNORE *
+	**************/
+
+	// Create .gitignore file
+	if config.Verbose {
+		time.Sleep(time.Second / 4) // sleep 250ms
+		fmt.Println("[+] Creating .gitignore file..")
+	}
+
+	gitIgnoreTemplatePath := filepath.Join(mksDir, "..", config.FOLDER_LIBS, config.FOLDER_TEMPLATES, config.FOLDER_BASE, config.FOLDER_OTHERS, config.FILE_GITIGNORE)
+	gitIgnoreExampleFinalPath := filepath.Join(config.BasePath, config.FILE_GITIGNORE)
+
+	err = utils.CreateFileFromTemplate(gitIgnoreTemplatePath, config.ServiceName, gitIgnoreExampleFinalPath)
+	if err != nil {
+		return err
+	}
+
 	/**************
 	* DOCKER FILE *
 	***************/

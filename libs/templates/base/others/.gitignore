@@ -1,0 +1,4 @@
+app.env
+access.log
+./vendor
+vendor/*
