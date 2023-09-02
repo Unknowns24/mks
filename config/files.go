@@ -22,6 +22,7 @@ const FILE_GO_REQUEST = "request.go"
 const FILE_GO_MAINROUTES = "mainRoutes.go"
 const FILE_GO_TESTCONTROLLER = "testController.go"
 
+const FILE_TEMPLATE_ENV = "app.env.template"
 const FILE_TEMPLATE_MAIN = "main.template"
 const FILE_TEMPLATE_CONFIG = "config.template"
 const FILE_TEMPLATE_REQUEST = "request.template"
