@@ -6,7 +6,7 @@ go func() {
 
     gRPCServer := grpc.NewServer()
 
-    pb.Register%GRP_MY_SERVICE_NAME%Server(gRPCServer, &controllers.Server{})
+    pb.Register%GRPC_MY_SERVICE_NAME%Server(gRPCServer, &controllers.Server{})
 
     err = gRPCServer.Serve(listener)
     if err != nil {

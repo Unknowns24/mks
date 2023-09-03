@@ -5,5 +5,5 @@ import (
 )
 
 type Server struct {
-	pb.Unimplemented%GRP_MY_SERVICE_NAME%Server
+	pb.Unimplemented%GRPC_MY_SERVICE_NAME%Server
 }

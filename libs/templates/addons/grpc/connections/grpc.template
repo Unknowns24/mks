@@ -10,18 +10,18 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var %GRP_SERVICE_NAME%ClientGRPC pb.%GRP_SERVICE_NAME%Client
+var %GRPC_SERVICE_NAME%ClientGRPC pb.%GRPC_SERVICE_NAME%Client
 
 func GRPC_InitialiceConnections() {
 	// Create a context with timeout
-	my%GRP_SERVICE_NAME%Ctx, my%GRP_SERVICE_NAME%Cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer my%GRP_SERVICE_NAME%Cancel()
+	my%GRPC_SERVICE_NAME%Ctx, my%GRPC_SERVICE_NAME%Cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer my%GRPC_SERVICE_NAME%Cancel()
 
-	// Opening the connection to my%GRP_SERVICE_NAME% gRPC server
-	my%GRP_SERVICE_NAME%Conn, err := grpc.DialContext(my%GRP_SERVICE_NAME%Ctx, utils.ENV.QUEUE_GRPC_HOST+":"+utils.ENV.QUEUE_GRPC_PORT, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock(), grpc.WithReturnConnectionError())
+	// Opening the connection to my%GRPC_SERVICE_NAME% gRPC server
+	my%GRPC_SERVICE_NAME%Conn, err := grpc.DialContext(my%GRPC_SERVICE_NAME%Ctx, utils.ENV.QUEUE_GRPC_HOST+":"+utils.ENV.QUEUE_GRPC_PORT, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock(), grpc.WithReturnConnectionError())
 	if err != nil {
-		panic("[-] Cannot connect with my%GRP_SERVICE_NAME% gRPC server \nError: \n " + err.Error())
+		panic("[-] Cannot connect with my%GRPC_SERVICE_NAME% gRPC server \nError: \n " + err.Error())
 	}
 
-	%GRP_SERVICE_NAME%ClientGRPC = pb.NewQueueServiceClient(my%GRP_SERVICE_NAME%Conn)
+	%GRPC_SERVICE_NAME%ClientGRPC = pb.NewQueueServiceClient(my%GRPC_SERVICE_NAME%Conn)
 }
