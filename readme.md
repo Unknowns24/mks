@@ -49,6 +49,24 @@ mks add mysql
 
 ```
 
+### Install a Template
+
+To install a specific template to mks command database, use the `install` command:
+
+```sh
+mks install [template]
+
+```
+
+-   `template`: The template you want to add.
+
+_Example:_
+
+```sh
+mks install cron
+
+```
+
 ## Features
 
 mks supports the following features:
@@ -60,6 +78,10 @@ mks supports the following features:
 -   RabbitMQ Consumer (rmq-consumer)
 -   Jason Web Token Auth (jwt)
 -   All features (all) **# Only on 'build' command**
+
+## Templates
+
+If you want to create a template, [this](https://github.com/unknowns24/mks/extensions.md) are the requirements of the file structure that the template requires to works fine. Template should be a .zip file and installed with **mks install** command.
 
 ## License
 
