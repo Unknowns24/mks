@@ -10,6 +10,7 @@ import (
 
 	"github.com/unknowns24/mks/config"
 	"github.com/unknowns24/mks/utils"
+	"github.com/unknowns24/mks/validators"
 )
 
 func GenerateMicroservice(serviceName string, features []string) error {
@@ -235,7 +236,7 @@ func createBaseFiles() error {
 	}
 
 	// Ask the user for the desired microservice port
-	appPort, err := AskData("Set microservice port:")
+	appPort, err := AskDataWithValidation("Set microservice port (1024 to 65535):", validators.ValidatePortRange)
 	if err != nil {
 		return err
 	}

@@ -34,7 +34,7 @@ func AskData(question string) (string, error) {
 	}
 }
 
-func AskDataWithValidation(questionTitle, validationTitle string, validator survey.Validator) (string, error) {
+func AskDataWithValidation(questionTitle string, validator survey.Validator) (string, error) {
 	response := ""
 	confirmed := false
 
@@ -62,6 +62,6 @@ func AskDataWithValidation(questionTitle, validationTitle string, validator surv
 	if confirmed {
 		return response, nil
 	} else {
-		return AskDataWithValidation(questionTitle, validationTitle, validator)
+		return AskDataWithValidation(questionTitle, validator)
 	}
 }
