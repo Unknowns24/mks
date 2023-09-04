@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"time"
 
 	"github.com/unknowns24/mks/config"
+	"github.com/unknowns24/mks/global"
 	"github.com/unknowns24/mks/utils"
 	"github.com/unknowns24/mks/validators"
 )
@@ -17,7 +17,7 @@ func GenerateMicroservice(serviceName string, features []string) error {
 	fmt.Println("[+] Creating " + serviceName + " microservice..")
 
 	// making serviceName global
-	config.ServiceName = serviceName
+	global.ServiceName = serviceName
 
 	// Get the current working directory
 	currentDir, err := os.Getwd()
@@ -25,26 +25,26 @@ func GenerateMicroservice(serviceName string, features []string) error {
 		return err
 	}
 
-	if config.Verbose {
+	if global.Verbose {
 		fmt.Println("[+] Creating root folder..")
 	}
 
 	// Create the base path for the microservice
-	config.BasePath = filepath.Join(currentDir, config.ServiceName)
+	global.BasePath = filepath.Join(currentDir, global.ServiceName)
 
 	// Check if the microservice already was created
-	_, dirErr := os.Stat(config.BasePath)
+	_, dirErr := os.Stat(global.BasePath)
 	if !os.IsNotExist(dirErr) {
-		return errors.New(config.ServiceName + " microservice already created!")
+		return errors.New(global.ServiceName + " microservice already created!")
 	}
 
 	// Create base path directory
-	if err := os.MkdirAll(config.BasePath, os.ModePerm); err != nil {
+	if err := os.MkdirAll(global.BasePath, os.ModePerm); err != nil {
 		return err
 	}
 
-	if config.Verbose {
-		time.Sleep(time.Second / 4) // sleep 250ms
+	if global.Verbose {
+		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating base files..")
 	}
 
@@ -61,7 +61,7 @@ func GenerateMicroservice(serviceName string, features []string) error {
 	}
 
 	if len(features) >= 1 {
-		if config.Verbose {
+		if global.Verbose {
 			fmt.Println("[+] Checking requested features..")
 		}
 
@@ -82,25 +82,17 @@ func GenerateMicroservice(serviceName string, features []string) error {
 			}
 		}
 
-		fmt.Printf("[+] Microservice '%s' with features %v generated successfully!\n", config.ServiceName, features)
+		fmt.Printf("[+] Microservice '%s' with features %v generated successfully!\n", global.ServiceName, features)
 		return nil
 	}
 
-	fmt.Printf("[+] Base Microservice '%s' generated successfully!\n", config.ServiceName)
+	fmt.Printf("[+] Base Microservice '%s' generated successfully!\n", global.ServiceName)
 	return nil
 }
 
 func createBaseFiles() error {
-	// Get the directory path of the current file (generator.go)
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		return fmt.Errorf("failed to get current file path")
-	}
-
-	mksDir := filepath.Dir(filename)
-
 	// Create the src path for the microservice
-	srcPath := filepath.Join(config.BasePath, config.FOLDER_SRC)
+	srcPath := filepath.Join(global.BasePath, config.FOLDER_SRC)
 
 	// Create src path directory
 	if err := os.MkdirAll(srcPath, os.ModePerm); err != nil {
@@ -112,14 +104,14 @@ func createBaseFiles() error {
 	*************/
 
 	// Create main.go using template
-	if config.Verbose {
+	if global.Verbose {
 		fmt.Println("[+] Creating main.go file..")
 	}
 
-	mainTemplatePath := filepath.Join(mksDir, "..", config.FOLDER_LIBS, config.FOLDER_TEMPLATES, config.FOLDER_BASE, config.FILE_TEMPLATE_MAIN)
+	mainTemplatePath := filepath.Join(global.TemplatesFolderPath, config.FOLDER_BASE, config.FILE_TEMPLATE_MAIN)
 	mainFinalPath := filepath.Join(srcPath, config.FILE_GO_MAIN)
 
-	err := utils.CreateFileFromTemplate(mainTemplatePath, config.ServiceName, mainFinalPath)
+	err := utils.CreateFileFromTemplate(mainTemplatePath, global.ServiceName, mainFinalPath)
 	if err != nil {
 		return err
 	}
@@ -129,8 +121,8 @@ func createBaseFiles() error {
 	***************/
 
 	// Create the utils path for the required base files
-	if config.Verbose {
-		time.Sleep(time.Second / 4) // sleep 250ms
+	if global.Verbose {
+		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating utils files directory..")
 	}
 
@@ -140,29 +132,29 @@ func createBaseFiles() error {
 	}
 
 	// Create utils/config.go using template
-	if config.Verbose {
-		time.Sleep(time.Second / 4) // sleep 250ms
+	if global.Verbose {
+		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating utils/config.go file..")
 	}
 
-	configTemplatePath := filepath.Join(mksDir, "..", config.FOLDER_LIBS, config.FOLDER_TEMPLATES, config.FOLDER_BASE, config.FOLDER_UTILS, config.FILE_TEMPLATE_CONFIG)
+	configTemplatePath := filepath.Join(global.TemplatesFolderPath, config.FOLDER_BASE, config.FOLDER_UTILS, config.FILE_TEMPLATE_CONFIG)
 	configFinalPath := filepath.Join(utilsPath, config.FILE_GO_CONFIG)
 
-	err = utils.CreateFileFromTemplate(configTemplatePath, config.ServiceName, configFinalPath)
+	err = utils.CreateFileFromTemplate(configTemplatePath, global.ServiceName, configFinalPath)
 	if err != nil {
 		return err
 	}
 
 	// Create utils/request.go using template
-	if config.Verbose {
-		time.Sleep(time.Second / 4) // sleep 250ms
+	if global.Verbose {
+		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating utils/request.go file..")
 	}
 
-	requestTemplatePath := filepath.Join(mksDir, "..", config.FOLDER_LIBS, config.FOLDER_TEMPLATES, config.FOLDER_BASE, config.FOLDER_UTILS, config.FILE_TEMPLATE_REQUEST)
+	requestTemplatePath := filepath.Join(global.TemplatesFolderPath, config.FOLDER_BASE, config.FOLDER_UTILS, config.FILE_TEMPLATE_REQUEST)
 	requestFinalPath := filepath.Join(utilsPath, config.FILE_GO_REQUEST)
 
-	err = utils.CreateFileFromTemplate(requestTemplatePath, config.ServiceName, requestFinalPath)
+	err = utils.CreateFileFromTemplate(requestTemplatePath, global.ServiceName, requestFinalPath)
 	if err != nil {
 		return err
 	}
@@ -172,8 +164,8 @@ func createBaseFiles() error {
 	**************/
 
 	// Create the routes path for the required base files
-	if config.Verbose {
-		time.Sleep(time.Second / 4) // sleep 250ms
+	if global.Verbose {
+		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating routes files directory..")
 	}
 
@@ -183,15 +175,15 @@ func createBaseFiles() error {
 	}
 
 	// Create routes/mainRoutes.go using template
-	if config.Verbose {
-		time.Sleep(time.Second / 4) // sleep 250ms
+	if global.Verbose {
+		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating routes/mainRoutes.go file..")
 	}
 
-	routesTemplatePath := filepath.Join(mksDir, "..", config.FOLDER_LIBS, config.FOLDER_TEMPLATES, config.FOLDER_BASE, config.FOLDER_ROUTES, config.FILE_TEMPLATE_MAINROUTES)
+	routesTemplatePath := filepath.Join(global.TemplatesFolderPath, config.FOLDER_BASE, config.FOLDER_ROUTES, config.FILE_TEMPLATE_MAINROUTES)
 	routesFinalPath := filepath.Join(routesPath, config.FILE_GO_MAINROUTES)
 
-	err = utils.CreateFileFromTemplate(routesTemplatePath, config.ServiceName, routesFinalPath)
+	err = utils.CreateFileFromTemplate(routesTemplatePath, global.ServiceName, routesFinalPath)
 	if err != nil {
 		return err
 	}
@@ -201,8 +193,8 @@ func createBaseFiles() error {
 	*******************/
 
 	// Create the routes path for the required base files
-	if config.Verbose {
-		time.Sleep(time.Second / 4) // sleep 250ms
+	if global.Verbose {
+		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating controllers files directory..")
 	}
 
@@ -212,15 +204,15 @@ func createBaseFiles() error {
 	}
 
 	// Create controllers/testController.go using template
-	if config.Verbose {
-		time.Sleep(time.Second / 4) // sleep 250ms
+	if global.Verbose {
+		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating controllers/testController.go file..")
 	}
 
-	controllerTemplatePath := filepath.Join(mksDir, "..", config.FOLDER_LIBS, config.FOLDER_TEMPLATES, config.FOLDER_BASE, config.FOLDER_CONTROLLERS, config.FILE_TEMPLATE_TESTCONTROLLER)
+	controllerTemplatePath := filepath.Join(global.TemplatesFolderPath, config.FOLDER_BASE, config.FOLDER_CONTROLLERS, config.FILE_TEMPLATE_TESTCONTROLLER)
 	controllerFinalPath := filepath.Join(controllersPath, config.FILE_GO_TESTCONTROLLER)
 
-	err = utils.CreateFileFromTemplate(controllerTemplatePath, config.ServiceName, controllerFinalPath)
+	err = utils.CreateFileFromTemplate(controllerTemplatePath, global.ServiceName, controllerFinalPath)
 	if err != nil {
 		return err
 	}
@@ -230,25 +222,25 @@ func createBaseFiles() error {
 	************/
 
 	// Create app.env.example using template
-	if config.Verbose {
-		time.Sleep(time.Second / 4) // sleep 250ms
+	if global.Verbose {
+		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating app.env.example file..")
 	}
 
 	// Ask the user for the desired microservice port
-	appPort, err := AskDataWithValidation("Set microservice port (1024 to 65535):", validators.ValidatePortRange)
+	appPort, err := utils.AskDataWithValidation("Set microservice port (1024 to 65535):", validators.ValidatePortRange)
 	if err != nil {
 		return err
 	}
 
 	// Map with all placeholders and its values to replace on .env template
 	envReplaces := map[string]string{
-		config.PLACEHOLDER_APP_NAME: config.ServiceName,
+		config.PLACEHOLDER_APP_NAME: global.ServiceName,
 		config.PLACEHOLDER_APP_PORT: appPort,
 	}
 
-	appEnvTemplatePath := filepath.Join(mksDir, "..", config.FOLDER_LIBS, config.FOLDER_TEMPLATES, config.FOLDER_BASE, config.FOLDER_OTHERS, config.FILE_ENVCONFIG_APP)
-	appEnvExampleFinalPath := filepath.Join(config.BasePath, config.FILE_ENVEXAMPLE_CONFIG)
+	appEnvTemplatePath := filepath.Join(global.TemplatesFolderPath, config.FOLDER_BASE, config.FOLDER_OTHERS, config.FILE_ENVCONFIG_APP)
+	appEnvExampleFinalPath := filepath.Join(global.BasePath, config.FILE_CONFIG_ENVEXAMPLE)
 
 	err = utils.CreateFileFromTemplateWithCustomReplace(appEnvTemplatePath, appEnvExampleFinalPath, envReplaces)
 	if err != nil {
@@ -256,12 +248,12 @@ func createBaseFiles() error {
 	}
 
 	// Create app.env using template
-	if config.Verbose {
-		time.Sleep(time.Second / 4) // sleep 250ms
+	if global.Verbose {
+		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating app.env file..")
 	}
 
-	appEnvFinalPath := filepath.Join(config.BasePath, config.FILE_ENV_CONFIG)
+	appEnvFinalPath := filepath.Join(global.BasePath, config.FILE_CONFIG_ENV)
 	err = utils.CreateFileFromTemplateWithCustomReplace(appEnvTemplatePath, appEnvFinalPath, envReplaces)
 	if err != nil {
 		return err
@@ -272,15 +264,15 @@ func createBaseFiles() error {
 	**************/
 
 	// Create .gitignore file
-	if config.Verbose {
-		time.Sleep(time.Second / 4) // sleep 250ms
+	if global.Verbose {
+		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating .gitignore file..")
 	}
 
-	gitIgnoreTemplatePath := filepath.Join(mksDir, "..", config.FOLDER_LIBS, config.FOLDER_TEMPLATES, config.FOLDER_BASE, config.FOLDER_OTHERS, config.FILE_GITIGNORE)
-	gitIgnoreExampleFinalPath := filepath.Join(config.BasePath, config.FILE_GITIGNORE)
+	gitIgnoreTemplatePath := filepath.Join(global.TemplatesFolderPath, config.FOLDER_BASE, config.FOLDER_OTHERS, config.FILE_GITIGNORE)
+	gitIgnoreExampleFinalPath := filepath.Join(global.BasePath, config.FILE_GITIGNORE)
 
-	err = utils.CreateFileFromTemplate(gitIgnoreTemplatePath, config.ServiceName, gitIgnoreExampleFinalPath)
+	err = utils.CreateFileFromTemplate(gitIgnoreTemplatePath, global.ServiceName, gitIgnoreExampleFinalPath)
 	if err != nil {
 		return err
 	}
@@ -290,15 +282,15 @@ func createBaseFiles() error {
 	***************/
 
 	// Create Dockerfile using template
-	if config.Verbose {
-		time.Sleep(time.Second / 4) // sleep 250ms
+	if global.Verbose {
+		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating Dockerfile file..")
 	}
 
-	dockerTemplatePath := filepath.Join(mksDir, "..", config.FOLDER_LIBS, config.FOLDER_TEMPLATES, config.FOLDER_DOCKER, config.FILE_DOCKER)
-	dockerFilePath := filepath.Join(config.BasePath, config.FILE_DOCKER)
+	dockerTemplatePath := filepath.Join(global.TemplatesFolderPath, config.FOLDER_DOCKER, config.FILE_DOCKER)
+	dockerFilePath := filepath.Join(global.BasePath, config.FILE_DOCKER)
 
-	err = utils.CreateFileFromTemplate(dockerTemplatePath, config.ServiceName, dockerFilePath)
+	err = utils.CreateFileFromTemplate(dockerTemplatePath, global.ServiceName, dockerFilePath)
 	if err != nil {
 		return err
 	}
@@ -308,18 +300,18 @@ func createBaseFiles() error {
 	************/
 
 	// Execute "go mod init" command in the basePath directory
-	if config.Verbose {
-		time.Sleep(time.Second / 4) // sleep 250ms
+	if global.Verbose {
+		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Running go mod init..")
 	}
 
 	// Initialice Go modules
-	err = utils.InitGoModules(config.ServiceName, config.BasePath)
+	err = utils.InitGoModules(global.ServiceName, global.BasePath)
 	if err != nil {
 		return err
 	}
 
-	if config.Verbose {
+	if global.Verbose {
 		fmt.Println("[+] Base files created successfully.")
 	}
 
@@ -327,11 +319,11 @@ func createBaseFiles() error {
 }
 
 func installBasePackages() error {
-	if config.Verbose {
+	if global.Verbose {
 		fmt.Println("[+] Installing base packages..")
 	}
 
-	err := utils.InstallNeededPackages(config.BasePath)
+	err := utils.InstallNeededPackages(global.BasePath)
 	if err != nil {
 		return err
 	}
