@@ -7,12 +7,13 @@ import (
 	"strings"
 
 	"github.com/unknowns24/mks/config"
+	"github.com/unknowns24/mks/global"
 )
 
 // Function to add a new configuration before the closing of the Config structure in the source file
 func AddGoConfigFromString(newConfig string) error {
 	// Path to the source file
-	filePath := filepath.Join(config.BasePath, config.FOLDER_SRC, config.FOLDER_UTILS, config.FILE_GO_CONFIG)
+	filePath := filepath.Join(global.BasePath, config.FOLDER_SRC, config.FOLDER_UTILS, config.FILE_GO_CONFIG)
 
 	// Read the current content of the file
 	content, err := ioutil.ReadFile(filePath)
@@ -50,10 +51,11 @@ func AddGoConfigFromString(newConfig string) error {
 // Function to add a new configuration before the closing of the Config structure in the source file
 func AddEnvConfigFromString(newConfig string) error {
 	// Path to the source file
-	filePath := filepath.Join(config.BasePath, config.FILE_ENV_CONFIG)
+	envFilePath := filepath.Join(global.BasePath, config.FILE_CONFIG_ENV)
+	exampleEnvfilePath := filepath.Join(global.BasePath, config.FILE_CONFIG_ENVEXAMPLE)
 
 	// Read the current content of the file
-	content, err := ioutil.ReadFile(filePath)
+	content, err := ioutil.ReadFile(envFilePath)
 	if err != nil {
 		return err
 	}
@@ -61,8 +63,14 @@ func AddEnvConfigFromString(newConfig string) error {
 	// Insert the new configuration before the closing of the Config structure
 	newContent := fmt.Sprintf("%s\n%s", content, newConfig)
 
-	// Write the updated content to the file
-	err = ioutil.WriteFile(filePath, []byte(newContent), 0644)
+	// Write the updated content to the env file
+	err = ioutil.WriteFile(envFilePath, []byte(newContent), 0644)
+	if err != nil {
+		return err
+	}
+
+	// Write the updated content to the example env file
+	err = ioutil.WriteFile(exampleEnvfilePath, []byte(newContent), 0644)
 	if err != nil {
 		return err
 	}
