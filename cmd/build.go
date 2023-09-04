@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/unknowns24/mks/config"
+	"github.com/unknowns24/mks/global"
 	"github.com/unknowns24/mks/manager"
 )
 
@@ -24,11 +25,12 @@ func NewBuildCmd() *cobra.Command {
 				}
 			}
 
+			// Main function start
 			return manager.GenerateMicroservice(serviceName, features)
 		},
 	}
 
-	cmd.Flags().BoolVarP(&config.Verbose, "verbose", "v", false, "Enable verbose mode")
+	cmd.Flags().BoolVarP(&global.Verbose, "verbose", "v", false, "Enable verbose mode")
 	cmd.Flags().StringSlice("features", []string{}, "Features required for the microservice")
 
 	return cmd

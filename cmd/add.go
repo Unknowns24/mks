@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/unknowns24/mks/config"
+	"github.com/unknowns24/mks/global"
 	"github.com/unknowns24/mks/manager"
 )
 
@@ -21,6 +22,7 @@ func NewAddCmd() *cobra.Command {
 				return fmt.Errorf("unknown feature '%s'. Valid features are: %s", feature, config.Features[:])
 			}
 
+			// Main function start
 			return manager.AddFeature(feature)
 		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -29,7 +31,7 @@ func NewAddCmd() *cobra.Command {
 		SilenceUsage: true, // Suppress printing the usage message
 	}
 
-	cmd.Flags().BoolVarP(&config.Verbose, "verbose", "v", false, "Enable verbose mode")
+	cmd.Flags().BoolVarP(&global.Verbose, "verbose", "v", false, "Enable verbose mode")
 
 	return cmd
 }
