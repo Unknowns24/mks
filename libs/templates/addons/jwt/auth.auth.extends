@@ -1,3 +1,7 @@
+import (
+	"time"
+)
+
 func GenerateJWT(id uint, keeplogin bool, ipAddress string) (string, error) {
 	// Generate date depending on keeplogin
 	date := jwt.NewNumericDate(time.Now().Add(time.Hour * 24)) // JWT Have 1 day of duration
