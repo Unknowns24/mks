@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/unknowns24/mks/config"
+	"github.com/unknowns24/mks/global"
 	"github.com/unknowns24/mks/libs/addons"
 	"github.com/unknowns24/mks/utils"
 )
@@ -26,18 +27,18 @@ func AddFeature(feature string) error {
 	var err error
 
 	// If global variable basePath is empty fill it
-	if config.BasePath == "" {
+	if global.BasePath == "" {
 		// Get the current working directory
-		config.BasePath, err = os.Getwd()
+		global.BasePath, err = os.Getwd()
 		if err != nil {
 			return err
 		}
 	}
 
 	// If global variable serviceName is empty fill it
-	if config.ServiceName == "" {
+	if global.ServiceName == "" {
 		// Get Mircoservice module name
-		config.ServiceName, err = utils.GetThisModuleName()
+		global.ServiceName, err = utils.GetThisModuleName()
 		if err != nil {
 			return err
 		}
