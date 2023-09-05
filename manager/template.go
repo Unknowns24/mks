@@ -141,7 +141,7 @@ func InstallTemplate(template string) error {
 	}
 
 	// check if template exists in addons folder
-	if utils.SliceContainsElement(global.InstalledFeatures, templateName) {
+	if utils.SliceContainsElement(global.InstalledTemplates, templateName) {
 		utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
 		return fmt.Errorf("template already installed (uninstall it first): %s", templateName)
 	}
