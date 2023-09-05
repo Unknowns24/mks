@@ -24,6 +24,11 @@ const (
 	FILE_TEMPLATE_TESTCONTROLLER = "testController.template"
 )
 
+// Template Files Addons
+const (
+	FILE_ADDON_TEMPLATE_DEPENDS = "this.depends"
+)
+
 // Envconfig files
 const (
 	FILE_ENVCONFIG_APP = "app.envconfig"
