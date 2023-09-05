@@ -160,6 +160,21 @@ func ReadFile(filePath string) (string, error) {
 	return string(templateContent), nil
 }
 
+func ListDirectoriesAndFiles(dirPath string) ([]string, error) {
+	var directoriesAndFiles []string
+
+	entries, err := os.ReadDir(dirPath)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, entry := range entries {
+		directoriesAndFiles = append(directoriesAndFiles, entry.Name())
+	}
+
+	return directoriesAndFiles, nil
+}
+
 func ListDirectories(dirPath string) ([]string, error) {
 	var directories []string
 

@@ -28,4 +28,6 @@ func init() {
 	rootCmd.AddCommand(NewBuildCmd())
 	rootCmd.AddCommand(NewAddCmd())
 	rootCmd.AddCommand(NewInstallCmd())
+	rootCmd.AddCommand(UninstallCmd())
+	rootCmd.AddCommand(ListCmd())
 }

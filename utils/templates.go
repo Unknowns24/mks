@@ -249,3 +249,28 @@ func ExtractImports(code string) []string {
 
 	return imports
 }
+
+/* ******************************* */
+/* ********** VALIDATORS ********* */
+/* ******************************* */
+
+func IsValidGoFile(filename string) (bool, error) {
+	// Lee el contenido del archivo
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		return false, err
+	}
+
+	// Expresión regular para validar el archivo Go
+	// ^(?:[\s]*|//.*\n|/\*.*?\*/)*package\s+\w+
+	// ^: Comienza al inicio del texto
+	// (?:...): Grupo no capturador
+	// [\s]*: Cualquier cantidad de espacios en blanco (incluidos saltos de línea)
+	// //.*\n: Comentario de línea
+	// /\*.*?\*/: Comentario multilínea (no greedy)
+	// package\s+\w+: La línea "package XXXXXX"
+	pattern := `^(?:[\s]*|//.*\n|/\*.*?\*/)*package\s+\w+`
+	regex := regexp.MustCompile(pattern)
+
+	return regex.Match(content), nil
+}
