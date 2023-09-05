@@ -28,7 +28,7 @@ func FileOrDirectoryExists(filePath string) bool {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return err == nil
 	}
-	return false
+	return true
 }
 
 // Make directory if not exists (including parents)
