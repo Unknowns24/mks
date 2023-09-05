@@ -2,7 +2,10 @@ module github.com/unknowns24/mks
 
 go 1.18
 
-require github.com/spf13/cobra v1.7.0
+require (
+	github.com/otiai10/copy v1.12.0
+	github.com/spf13/cobra v1.7.0
+)
 
 require (
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
