@@ -26,7 +26,7 @@ func NewBuildCmd() *cobra.Command {
 				}
 
 				if !validFeature {
-					return fmt.Errorf("unknown feature '%s'. Valid features are: %s", feature, append([]string{config.ALL_FEATURES}, global.InstalledFeatures[:]...))
+					return fmt.Errorf("unknown feature '%s'. Valid features are: %s", feature, append([]string{config.ALL_FEATURES}, global.InstalledTemplates[:]...))
 				}
 			}
 
