@@ -26,6 +26,12 @@ mks's templates supports the following extensions:
 | ...\<folders\>.\<file\>.extends  | Code that will extends the functions inside the specified file acording the file name format |                                      |
 | ...\<folders\>.\<file\>.template | File/s that will contain the template code                                                   | <span style="color:orange">\*</span> |
 
+#### `.depends file code example:`
+
+```json
+{ "dependsOn": ["mysql", "jwt"] }
+```
+
 #### `.extends file example:`
 
 -   \<folder1\>.\<folder2\>.\<folderN\>.\<filename\>.extends => this file code will be copied at the bottom of the file: <span style="color:orange">src/</span>folder1/folder2/folderN/filename.go
