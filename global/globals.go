@@ -8,6 +8,7 @@ var (
 // Mks global variables
 var (
 	TemplatesFolderPath = "" // Path to templates folder inside mks
+	InstalledFeatures   = []string{}
 )
 
 // Microservice global variables
