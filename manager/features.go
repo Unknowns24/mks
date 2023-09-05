@@ -3,24 +3,21 @@ package manager
 import (
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/unknowns24/mks/config"
 	"github.com/unknowns24/mks/global"
-	"github.com/unknowns24/mks/libs/addons"
-	"github.com/unknowns24/mks/utils"
 )
 
-func IsValidFeature(feature string) bool {
-	valid := false
-
-	for _, validFeature := range config.Features {
-		if feature == validFeature {
-			valid = true
-			break
+func IsValidFeature(feature string) (bool, error) {
+	// Check if requested feature is installed
+	for _, template := range global.InstalledFeatures {
+		if template == feature {
+			return true, nil
 		}
 	}
 
-	return valid
+	return false, fmt.Errorf("unknown feature: %s", feature)
 }
 
 func AddFeature(feature string) error {
@@ -38,59 +35,43 @@ func AddFeature(feature string) error {
 	// If global variable serviceName is empty fill it
 	if global.ServiceName == "" {
 		// Get Mircoservice module name
-		global.ServiceName, err = utils.GetThisModuleName()
+		global.ServiceName, err = GetThisModuleName()
 		if err != nil {
 			return err
 		}
 	}
 
-	switch feature {
-	case config.FEATURE_JWT:
-		return addons.InstallJWT()
-	case config.FEATURE_MYSQL:
-		return addons.InstallMySQL()
-	case config.FEATURE_GRPC_SERVER:
-		return addons.InstallGrpcServer()
-	case config.FEATURE_GRPC_CLIENT:
-		return addons.InstallGrpcClient()
-	case config.FEATURE_RMQ_PRODUCER:
-		return addons.InstallRMQProducer()
-	case config.FEATURE_RMQ_CONSUMER:
-		return addons.InstallRMQConsumer()
-	default: // unrechable code
+	// Validating feature
+	addonsPath := path.Join(global.TemplatesFolderPath, config.FOLDER_ADDONS)
+	founded := false
+
+	// Check if requested feature is installed
+	for _, template := range global.InstalledFeatures {
+		if template != feature {
+			continue
+		}
+
+		founded = true
+
+		err = InstallFeature(path.Join(addonsPath, template))
+		if err != nil {
+			return err
+		}
+	}
+
+	if !founded {
 		return fmt.Errorf("unknown feature: %s", feature)
 	}
+
+	return nil
 }
 
 func AddAllFeatures() error {
-	// Installing JWT feature
-	if jwtErr := addons.InstallJWT(); jwtErr != nil {
-		return jwtErr
-	}
+	// To implement
+	return nil
+}
 
-	// Installing MySQL feature
-	if mysqlErr := addons.InstallMySQL(); mysqlErr != nil {
-		return mysqlErr
-	}
-
-	// Installing gRPC server feature
-	if grpcSvErr := addons.InstallGrpcServer(); grpcSvErr != nil {
-		return grpcSvErr
-	}
-
-	// Installing gRPC client feature
-	if grpcClErr := addons.InstallGrpcClient(); grpcClErr != nil {
-		return grpcClErr
-	}
-
-	// Installing RabbitMQ producer feature
-	if rmqProdErr := addons.InstallRMQProducer(); rmqProdErr != nil {
-		return rmqProdErr
-	}
-
-	// Installing RabbitMQ consumer feature
-	if rmqConsErr := addons.InstallRMQConsumer(); rmqConsErr != nil {
-		return rmqConsErr
-	}
+func InstallFeature(templatePath string) error {
+	// To Implement
 	return nil
 }
