@@ -5,23 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
 	cp "github.com/otiai10/copy"
 )
-
-// chech if is an url or not (accepts http and https)
-func IsUrl(url string) bool {
-	return strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://")
-}
-
-// chech if is an github url  (package style like github.com/unknowns24/mks)
-func IsGithubUrl(url string) bool {
-	return strings.HasPrefix(url, "github.com/")
-}
 
 // Check file or directory exists
 func FileOrDirectoryExists(filePath string) bool {
@@ -72,31 +61,6 @@ func DeleteFileOrDirectory(filePath string) error {
 		return errors.New("file or directory does not exist")
 	}
 	return os.RemoveAll(filePath)
-}
-
-// Download file from url to destination
-func DownloadFile(url string, destPath string) error {
-	// Create file
-	out, err := os.Create(destPath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	// Download file
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Write body to file
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // Unzip file to destination
