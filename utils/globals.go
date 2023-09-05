@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"path"
 	"path/filepath"
 	"runtime"
 
@@ -21,5 +22,17 @@ func SetTemplatesFolderPathGlobal() error {
 	// Save in a global variable the path to templates folder inside MKS
 	global.TemplatesFolderPath = filepath.Join(mksDir, "..", config.FOLDER_LIBS, config.FOLDER_TEMPLATES)
 
+	return nil
+}
+
+func SetCurrentInstalledTemplates() error {
+	// Get installed templates
+	addonsPath := path.Join(global.TemplatesFolderPath, config.FOLDER_ADDONS)
+	installedTemplates, err := ListDirectories(addonsPath)
+	if err != nil {
+		return err
+	}
+
+	global.InstalledFeatures = installedTemplates
 	return nil
 }
