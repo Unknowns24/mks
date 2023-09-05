@@ -10,6 +10,42 @@ import (
 	"github.com/unknowns24/mks/utils"
 )
 
+func ListTemplate() error {
+	fmt.Println("[+] List of templates installed and availables to use:")
+
+	for _, template := range global.InstalledTemplates {
+		fmt.Println(template)
+	}
+	return nil
+}
+
+func UninstallTemplate(template string) error {
+	fmt.Println("[+] Uninstalling " + template + " template...")
+
+	if global.Verbose {
+		fmt.Println("[+] Checking if template is installed...")
+	}
+
+	// check if template exists in addons folder
+	if !utils.SliceContainsElement(global.InstalledTemplates, template) {
+		return fmt.Errorf("template not installed: %s", template)
+	}
+
+	if utils.FileOrDirectoryExists(path.Join(global.TemplatesFolderPath, config.FOLDER_ADDONS, template)) {
+		utils.DeleteFileOrDirectory(path.Join(global.TemplatesFolderPath, config.FOLDER_ADDONS, template)) // delete template directory
+	}
+
+	if utils.FileOrDirectoryExists(path.Join(global.TemplatesFolderPath, config.FOLDER_ADDONS, template)) {
+		return fmt.Errorf("failed to uninstall template: %s (Try delete folder %s manually)", template, path.Join(global.TemplatesFolderPath, config.FOLDER_ADDONS, template))
+	}
+
+	if global.Verbose {
+		fmt.Println("[+] Template uninstalled successfully!")
+	}
+
+	return nil
+}
+
 func InstallTemplate(template string) error {
 	fmt.Println("[+] Installing " + template + " template...")
 
