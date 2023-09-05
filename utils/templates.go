@@ -4,11 +4,17 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/unknowns24/mks/config"
+	"github.com/unknowns24/mks/global"
 )
+
+/******************************
+* CREATE FILES FROM TEMPLATES *
+*******************************/
 
 // Create files from templates wich only needs to changes %PACKAGE_NAME%
 func CreateFileFromTemplate(templatePath, serviceName, finalPath string) error {
@@ -54,16 +60,9 @@ func CreateFileFromTemplateWithCustomReplace(templatePath, finalPath string, rep
 	return nil
 }
 
-// Read file content and return it
-func ReadFile(filePath string) (string, error) {
-	// Read template content
-	templateContent, err := os.ReadFile(filePath)
-	if err != nil {
-		return "", err
-	}
-
-	return string(templateContent), nil
-}
+/****************************************
+* READ AND REPLACE PLACEHOLDERS ON FILE *
+*****************************************/
 
 // Read file content, replace placeholder with its values in memory and returns modified content
 func ReadFileWithCustomReplace(filePath string, replaces map[string]string) (string, error) {
@@ -82,6 +81,10 @@ func ReadFileWithCustomReplace(filePath string, replaces map[string]string) (str
 
 	return fileContent, nil
 }
+
+/***********************
+* EXTENDS FILE CONTENT *
+************************/
 
 // Function to extend file content by adding new content at the bottom of the file
 func ExtendFile(filePath, newContent string) error {
@@ -130,6 +133,82 @@ func ExtendFile(filePath, newContent string) error {
 	return nil
 }
 
+/**********************************
+* ADD NEW CONFIGS TO CONFIG FILES *
+***********************************/
+
+// Function to add a new configuration before the closing of the Config structure in the source file
+func AddGoConfigFromString(newConfig string) error {
+	// Path to the source file
+	filePath := filepath.Join(global.BasePath, config.FOLDER_SRC, config.FOLDER_UTILS, config.FILE_GO_CONFIG)
+
+	// Read the current content of the file
+	content, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	lines := strings.Split(string(content), "\n")
+	var configClosingBraceIndex int
+
+	// Find the line that defines the Config structure
+	for i, line := range lines {
+		if strings.Contains(line, "Config") && strings.Contains(line, "struct") {
+			configClosingBraceIndex = findClosingBrace(lines, i)
+			break
+		}
+	}
+
+	if configClosingBraceIndex == -1 {
+		return fmt.Errorf("could not find closing brace for the Config structure")
+	}
+
+	// Insert the new configuration before the closing of the Config structure
+	newContent := fmt.Sprintf("%s\n%s\n%s", strings.Join(lines[:configClosingBraceIndex], "\n"), newConfig, strings.Join(lines[configClosingBraceIndex:], "\n"))
+
+	// Write the updated content to the file
+	err = ioutil.WriteFile(filePath, []byte(newContent), 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Function to add a new configuration before the closing of the Config structure in the source file
+func AddEnvConfigFromString(newConfig string) error {
+	// Path to the source file
+	envFilePath := filepath.Join(global.BasePath, config.FILE_CONFIG_ENV)
+	exampleEnvfilePath := filepath.Join(global.BasePath, config.FILE_CONFIG_ENVEXAMPLE)
+
+	// Read the current content of the file
+	content, err := ioutil.ReadFile(envFilePath)
+	if err != nil {
+		return err
+	}
+
+	// Insert the new configuration before the closing of the Config structure
+	newContent := fmt.Sprintf("%s\n%s", content, newConfig)
+
+	// Write the updated content to the env file
+	err = ioutil.WriteFile(envFilePath, []byte(newContent), 0644)
+	if err != nil {
+		return err
+	}
+
+	// Write the updated content to the example env file
+	err = ioutil.WriteFile(exampleEnvfilePath, []byte(newContent), 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+/******************************
+* EXTRACT OR REMOVE FROM CODE *
+*******************************/
+
 // ExtractPackageLine extracts the line containing the "package" declaration from Go code.
 func ExtractPackageLine(code string) string {
 	// Utiliza una expresión regular para encontrar la línea que comienza con "package" seguida de caracteres opcionales.
@@ -169,20 +248,4 @@ func ExtractImports(code string) []string {
 	}
 
 	return imports
-}
-
-func findClosingBrace(lines []string, startIndex int) int {
-	braceCount := 0
-
-	for i := startIndex; i < len(lines); i++ {
-		line := lines[i]
-		braceCount += strings.Count(line, "{")
-		braceCount -= strings.Count(line, "}")
-
-		if braceCount == 0 {
-			return i
-		}
-	}
-
-	return -1
 }
