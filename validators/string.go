@@ -22,6 +22,9 @@ type StringLenghtOptions struct {
 	Max int32
 }
 
+const minStringLenght = 0
+const maxStringLenght = 65536
+
 func Alphabet(caseSensitive CaseType, opt ...StringLenghtOptions) survey.Validator {
 	return func(val interface{}) error {
 		str, ok := val.(string)
@@ -41,12 +44,20 @@ func Alphabet(caseSensitive CaseType, opt ...StringLenghtOptions) survey.Validat
 		}
 
 		options := StringLenghtOptions{
-			Min: 0,
-			Max: 65536,
+			Min: minStringLenght,
+			Max: maxStringLenght,
 		}
 
 		// Check if options are custom
 		if len(opt) > 0 {
+			if opt[0].Min < minStringLenght {
+				opt[0].Min = minStringLenght
+			}
+
+			if opt[0].Max > maxStringLenght {
+				opt[0].Max = maxStringLenght
+			}
+
 			options = opt[0]
 		}
 

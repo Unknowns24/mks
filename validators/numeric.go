@@ -38,6 +38,14 @@ func NumberRange(opt ...NumberRangeOptions) survey.Validator {
 
 		// Check if options are custom
 		if len(opt) > 0 {
+			if opt[0].Min < int32minlengh {
+				opt[0].Min = int32minlengh
+			}
+
+			if opt[0].Max > int32maxlengh {
+				opt[0].Max = int32maxlengh
+			}
+
 			options = opt[0]
 		}
 
