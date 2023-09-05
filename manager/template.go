@@ -61,13 +61,13 @@ func InstallTemplate(template string) error {
 	}
 
 	// current temporal template folder path
-	currentTemplatePath := path.Join(tempdir, config.FOLDER_TMP_TEMPLATE)
+	temporalUnzippedPath := path.Join(tempdir, config.FOLDER_TMP_TEMPLATE)
 
 	// current temporal template zip file path
 	currentTemplateZipPath := path.Join(tempdir, config.FILE_ZIP_TEMPLATE)
 
 	// make a directory inside temporary directory to unzip the template
-	utils.MakeDirectoryIfNotExists(currentTemplatePath, 0755)
+	utils.MakeDirectoryIfNotExists(temporalUnzippedPath, 0755)
 	if err != nil {
 
 		utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
@@ -99,7 +99,7 @@ func InstallTemplate(template string) error {
 			fmt.Println("[+] Unzipping template...")
 		}
 		// unzip template.zip to template directory inside temporary directory
-		err = utils.Unzip(currentTemplateZipPath, currentTemplatePath)
+		err = utils.Unzip(currentTemplateZipPath, temporalUnzippedPath)
 
 		// delete template.zip to save space
 		utils.DeleteFileOrDirectory(currentTemplateZipPath)
@@ -122,32 +122,19 @@ func InstallTemplate(template string) error {
 		}
 
 		// unzip template.zip to template directory inside temporary directory
-		err = utils.Unzip(template, currentTemplatePath)
+		err = utils.Unzip(template, temporalUnzippedPath)
 		if err != nil {
 			utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
 			return fmt.Errorf("failed to unzip template: %s", err)
 		}
 	}
 
-	/*
-		TODO:
-			in the zip file, the template is in a folder with the same name as the zip file with suffix -main (example: template-main)
-			unzip the file to a temporary directory
-			check if the template folder exists in the temporary directory
-			if exists, check if template has already been installed
-			if not has installed, check integrity of the template
-			if integrity is ok, install the template in addons folder
-	*/
-
-	//prints the tempdir path for debugging
-	//fmt.Printf("tempdir: %s\n", tempdir)
-
 	if global.Verbose {
 		fmt.Println("[+] Checking if template is valid...")
 	}
 
 	// get template name from zip file root folder (must have only one folder, the name of this folder is the template name)
-	dirs, err := utils.ListDirectories(currentTemplatePath)
+	dirs, err := utils.ListDirectories(temporalUnzippedPath)
 	if err != nil {
 
 		utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
@@ -170,8 +157,6 @@ func InstallTemplate(template string) error {
 		templateName = strings.TrimSuffix(dirs[0], "-main")
 	}
 
-	// TODO: Other integrity checks (check if template has all required files, etc)
-
 	if global.Verbose {
 		fmt.Println("[+] Checking if template is installed...")
 	}
@@ -182,17 +167,60 @@ func InstallTemplate(template string) error {
 		return fmt.Errorf("template already installed (uninstall it first): %s", templateName)
 	}
 
+	temporalUnzippedTemplatePath := path.Join(temporalUnzippedPath, dirs[0])
+
+	templateFiles, _ := utils.ListDirectoriesAndFiles(temporalUnzippedTemplatePath)
+
+	haveTemplateFile := false
+
+	for _, templateFile := range templateFiles {
+		if strings.HasSuffix(templateFile, config.FILE_TEMPLATE_EXTENSION) {
+
+			valid, err := utils.IsValidGoFile(templateFile)
+
+			if !valid || err != nil {
+				utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
+				return fmt.Errorf("invalid template structure: %s", "template file must be a valid go file")
+			}
+
+			haveTemplateFile = true
+			break
+		}
+	}
+
+	if !haveTemplateFile {
+		utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
+		return fmt.Errorf("invalid template structure: %s", "template must have a template file")
+	}
+
+	dependFile := path.Join(temporalUnzippedTemplatePath, config.FILE_ADDON_TEMPLATE_DEPENDS)
+
+	if utils.FileOrDirectoryExists(dependFile) {
+		dependsOk, dependsMissing, err := utils.ValidateAllDependenciesInstalled(dependFile)
+
+		if err != nil {
+			utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
+			return fmt.Errorf("failed to validate dependencies: %s", err)
+		}
+
+		if !dependsOk {
+			utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
+			return fmt.Errorf("template has missing dependencies: %s", strings.Join(dependsMissing, ", "))
+		}
+	}
+
 	if global.Verbose {
 		fmt.Println("[+] Installing template...")
 	}
 
 	// move template folder to addons folder
-	err = utils.MoveFileOrDirectory(path.Join(currentTemplatePath, dirs[0]), path.Join(addonsPath, templateName))
+	err = utils.MoveFileOrDirectory(temporalUnzippedTemplatePath, path.Join(addonsPath, templateName))
+
+	utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
+
 	if err != nil {
-		utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
 		return fmt.Errorf("failed to move template to addons folder: %s", err)
 	}
 
-	utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
 	return nil
 }
