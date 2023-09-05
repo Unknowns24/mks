@@ -12,6 +12,16 @@ import (
 	cp "github.com/otiai10/copy"
 )
 
+// Get this executable path
+func GetExecutablePath() (string, error) {
+	exePath, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Dir(exePath), nil
+}
+
 // Check file or directory exists
 func FileOrDirectoryExists(filePath string) bool {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {

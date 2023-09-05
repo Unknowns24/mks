@@ -23,14 +23,14 @@ func NewAddCmd() *cobra.Command {
 
 			// Validate feature argument
 			if !validFeature {
-				return fmt.Errorf("unknown feature '%s'. Valid features are: %s", feature, global.InstalledFeatures[:])
+				return fmt.Errorf("unknown feature '%s'. Valid features are: %s", feature, global.InstalledTemplates[:])
 			}
 
 			// Main function start
 			return manager.AddFeature(feature)
 		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return global.InstalledFeatures[:], cobra.ShellCompDirectiveDefault
+			return global.InstalledTemplates[:], cobra.ShellCompDirectiveDefault
 		},
 		SilenceUsage: true, // Suppress printing the usage message
 	}

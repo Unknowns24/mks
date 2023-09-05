@@ -11,7 +11,7 @@ import (
 
 func IsValidFeature(feature string) (bool, error) {
 	// Check if requested feature is installed
-	for _, template := range global.InstalledFeatures {
+	for _, template := range global.InstalledTemplates {
 		if template == feature {
 			return true, nil
 		}
@@ -46,7 +46,7 @@ func AddFeature(feature string) error {
 	founded := false
 
 	// Check if requested feature is installed
-	for _, template := range global.InstalledFeatures {
+	for _, template := range global.InstalledTemplates {
 		if template != feature {
 			continue
 		}
