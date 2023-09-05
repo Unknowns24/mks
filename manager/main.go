@@ -228,7 +228,12 @@ func createBaseFiles() error {
 	}
 
 	// Ask the user for the desired microservice port
-	appPort, err := utils.AskDataWithValidation("Set microservice port (1024 to 65535):", validators.ValidatePortRange)
+	minMaxPorts := validators.NumberRangeOptions{
+		Min: 1024,
+		Max: 65535,
+	}
+
+	appPort, err := utils.AskDataWithValidation("Set microservice port (1024 to 65535):", validators.NumberRange(minMaxPorts))
 	if err != nil {
 		return err
 	}
