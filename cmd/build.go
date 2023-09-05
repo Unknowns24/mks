@@ -20,8 +20,13 @@ func NewBuildCmd() *cobra.Command {
 
 			// Validate every feature on features string slice
 			for _, feature := range features {
-				if !manager.IsValidFeature(feature) {
-					return fmt.Errorf("unknown feature '%s'. Valid features are: %s", feature, append([]string{config.ALL_FEATURES}, config.Features[:]...))
+				validFeature, err := manager.IsValidFeature(feature)
+				if err != nil {
+					return err
+				}
+
+				if !validFeature {
+					return fmt.Errorf("unknown feature '%s'. Valid features are: %s", feature, append([]string{config.ALL_FEATURES}, global.InstalledFeatures[:]...))
 				}
 			}
 
