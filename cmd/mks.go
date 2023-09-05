@@ -15,6 +15,7 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	// Set global variables
 	utils.SetTemplatesFolderPathGlobal()
+	utils.SetCurrentInstalledTemplates()
 
 	// Start main command
 	if err := rootCmd.Execute(); err != nil {
