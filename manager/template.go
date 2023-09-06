@@ -152,9 +152,9 @@ func InstallTemplate(template string) error {
 	templateName := dirs[0]
 
 	// check if template name has -main suffix and remove it (it occurs when the template is downloaded from github, by the user or by the program)
-	if strings.HasSuffix(dirs[0], "-main") {
+	if strings.HasSuffix(dirs[0], config.NETWORK_GITHUB_BRANCH_SUFFIX) {
 		// delete -main suffix from template name
-		templateName = strings.TrimSuffix(dirs[0], "-main")
+		templateName = strings.TrimSuffix(dirs[0], config.NETWORK_GITHUB_BRANCH_SUFFIX)
 	}
 
 	if global.Verbose {
@@ -174,7 +174,7 @@ func InstallTemplate(template string) error {
 	haveTemplateFile := false
 
 	for _, templateFile := range templateFiles {
-		if strings.HasSuffix(templateFile, config.FILE_TEMPLATE_EXTENSION) {
+		if strings.HasSuffix(templateFile, config.FILE_EXTENSION_TEMPLATE) {
 
 			valid, err := utils.IsValidGoFile(templateFile)
 
