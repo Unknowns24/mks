@@ -176,7 +176,7 @@ func InstallTemplate(template string) error {
 	for _, templateFile := range templateFiles {
 		if strings.HasSuffix(templateFile, config.FILE_TEMPLATE_EXTENSION) {
 
-			valid, err := utils.IsValidGoFile(templateFile)
+			valid, err := utils.IsPseudoValidGoFile(templateFile)
 
 			if !valid || err != nil {
 				utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
@@ -186,6 +186,76 @@ func InstallTemplate(template string) error {
 			haveTemplateFile = true
 			break
 		}
+	}
+
+	fileToCheck := path.Join(temporalUnzippedTemplatePath, config.FILE_ADDON_TEMPLATE_MAIN_LOAD)
+
+	if utils.FileOrDirectoryExists(fileToCheck) {
+		valid, err := utils.CheckSyntaxGoFile(fileToCheck)
+		if err != nil {
+			utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
+			return fmt.Errorf("invalid template structure: %s can't be checked", fileToCheck)
+		}
+		if !valid {
+			utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
+			return fmt.Errorf("invalid template structure: %s is not a valid go file", fileToCheck)
+		}
+
+		valid, err = utils.CheckPackageNameInFile(fileToCheck, config.SPELL_PACKAGE_MKS_MODULE)
+		if err != nil {
+			utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
+			return fmt.Errorf("invalid template structure: can't check package name in %s", fileToCheck)
+		}
+		if !valid {
+			utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
+			return fmt.Errorf("invalid template structure: %s must have %s package name", fileToCheck, config.SPELL_PACKAGE_MKS_MODULE)
+		}
+
+		valid, err = utils.FunctionExistsInFile(fileToCheck, config.SPELL_FUNCION_LOAD_PREFIX+templateName)
+		if err != nil {
+			utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
+			return fmt.Errorf("invalid template structure: can't check function name in %s", fileToCheck)
+		}
+		if !valid {
+			utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
+			return fmt.Errorf("invalid template structure: %s must have %s function", fileToCheck, config.SPELL_FUNCION_LOAD_PREFIX+templateName)
+		}
+
+	}
+
+	fileToCheck = path.Join(temporalUnzippedTemplatePath, config.FILE_ADDON_TEMPLATE_MAIN_UNLOAD)
+
+	if utils.FileOrDirectoryExists(fileToCheck) {
+		valid, err := utils.CheckSyntaxGoFile(fileToCheck)
+		if err != nil {
+			utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
+			return fmt.Errorf("invalid template structure: %s can't be checked", fileToCheck)
+		}
+		if !valid {
+			utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
+			return fmt.Errorf("invalid template structure: %s is not a valid go file", fileToCheck)
+		}
+
+		valid, err = utils.CheckPackageNameInFile(fileToCheck, config.SPELL_PACKAGE_MKS_MODULE)
+		if err != nil {
+			utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
+			return fmt.Errorf("invalid template structure: can't check package name in %s", fileToCheck)
+		}
+		if !valid {
+			utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
+			return fmt.Errorf("invalid template structure: %s must have %s package name", fileToCheck, config.SPELL_PACKAGE_MKS_MODULE)
+		}
+
+		valid, err = utils.FunctionExistsInFile(fileToCheck, config.SPELL_FUNCION_UNLOAD_PREFIX+templateName)
+		if err != nil {
+			utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
+			return fmt.Errorf("invalid template structure: can't check function name in %s", fileToCheck)
+		}
+		if !valid {
+			utils.DeleteFileOrDirectory(tempdir) // delete temporary directory
+			return fmt.Errorf("invalid template structure: %s must have %s function", fileToCheck, config.SPELL_FUNCION_UNLOAD_PREFIX+templateName)
+		}
+
 	}
 
 	if !haveTemplateFile {
