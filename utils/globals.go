@@ -17,7 +17,7 @@ func SetTemplatesFolderPathGlobal() error {
 	}
 
 	// Save in a global variable the path to templates folder inside MKS
-	global.TemplatesFolderPath = filepath.Join(mksDir, config.FOLDER_LIBS, config.FOLDER_TEMPLATES)
+	global.TemplatesFolderPath = filepath.Join(mksDir, config.FOLDER_TEMPLATES)
 
 	return nil
 }
