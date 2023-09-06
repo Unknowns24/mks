@@ -26,6 +26,31 @@ mks's templates supports the following extensions:
 | ...\<folders\>.\<file\>.extends  | Code that will extends the functions inside the specified file acording the file name format |                                      |
 | ...\<folders\>.\<file\>.template | File/s that will contain the template code                                                   | <span style="color:orange">\*</span> |
 
+#### `main.load file code example:`
+
+This is the format that `main.load` file must have but this file is not required for all templates, the load function will be executed
+at the start of main function. Remember replace `<TemplateName>` with your template name for example `MySQL`, the final function should be `loadMySQL`.
+
+```go
+package mks_modules
+
+func load<TemplateName>() {
+
+}
+```
+
+#### `main.unload file code example:`
+
+This is the format that `main.unload` file must have but this file is not required for all templates, the load function will be executed at the start of main function. Remember replace `<TemplateName>` with your template name for example `MySQL`, the final function should be `unloadMySQL`.
+
+```go
+package mks_modules
+
+func unload<TemplateName>() {
+
+}
+```
+
 #### `.depends file code example:`
 
 ```json
