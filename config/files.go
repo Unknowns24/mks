@@ -26,7 +26,9 @@ const (
 
 // Template Files Addons
 const (
-	FILE_ADDON_TEMPLATE_DEPENDS = "this.depends"
+	FILE_ADDON_TEMPLATE_DEPENDS     = "this.depends"
+	FILE_ADDON_TEMPLATE_MAIN_LOAD   = "main.load"
+	FILE_ADDON_TEMPLATE_MAIN_UNLOAD = "main.unload"
 )
 
 // Envconfig files
