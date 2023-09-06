@@ -12,7 +12,6 @@ const (
 // Shared folders
 const (
 	FOLDER_SRC         = "src"
-	FOLDER_LIBS        = "libs"
 	FOLDER_UTILS       = "utils"
 	FOLDER_ROUTES      = "routes"
 	FOLDER_CONTROLLERS = "controllers"
