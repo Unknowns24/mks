@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -17,7 +18,7 @@ import (
 *******************************/
 
 // Create files from templates wich only needs to changes %%PACKAGE_NAME%%
-func CreateFileFromTemplate(templatePath, serviceName, finalPath string) error {
+func CreateFileFromTemplate(templatePath, finalPath string) error {
 	// Read template content
 	templateContent, err := os.ReadFile(templatePath)
 	if err != nil {
@@ -26,7 +27,7 @@ func CreateFileFromTemplate(templatePath, serviceName, finalPath string) error {
 	}
 
 	// Replace placeholders with the actual service name
-	fileContent := strings.ReplaceAll(string(templateContent), config.PLACEHOLDER_PACKAGENAME, serviceName)
+	fileContent := strings.ReplaceAll(string(templateContent), config.PLACEHOLDER_PACKAGENAME, global.ServiceName)
 
 	// Write the file content in the file
 	if err := os.WriteFile(finalPath, []byte(fileContent), os.ModePerm); err != nil {
@@ -248,4 +249,79 @@ func ExtractImports(code string) []string {
 	}
 
 	return imports
+}
+
+func ImportBaseContent(sourcePath, finalPath string) error {
+	filesAndDirs, err := ListDirectoriesAndFiles(sourcePath)
+	if err != nil {
+		return err
+	}
+
+	// Parse every file or dir
+	for _, fileOrDir := range filesAndDirs {
+		fileOrDirPath := path.Join(sourcePath, fileOrDir)
+
+		// Check if fileOrDir is mks_modules folder
+		if fileOrDir == config.FOLDER_MKS_MODULES {
+			if global.Verbose {
+				fmt.Println("[+] Copying mks_modules folder..")
+			}
+
+			folderFinalPath := path.Join(finalPath, fileOrDir)
+			err = CopyFileOrDirectory(fileOrDirPath, folderFinalPath)
+			if err != nil {
+				return err
+			}
+
+			continue
+		}
+
+		// Get path info
+		info, err := os.Stat(fileOrDirPath)
+		if err != nil {
+			return err
+		}
+
+		// Action depends on file type
+		if info.IsDir() {
+			if global.Verbose {
+				fmt.Printf("[+] Creating %s directory..\n", fileOrDir)
+			}
+
+			// Create folder on application
+			finalFolderPath := filepath.Join(finalPath, fileOrDir)
+			if err := os.MkdirAll(finalFolderPath, os.ModePerm); err != nil {
+				return err
+			}
+
+			// Scan folder content
+			ImportBaseContent(fileOrDirPath, finalFolderPath)
+		} else {
+			isTemplate := false // <- flag to check if use CreateFileFromTemplate or no
+
+			// If file extension is .template change it for .go on final file
+			finalFile := fileOrDir
+			if strings.Contains(finalFile, config.FILE_EXTENSION_TEMPLATE) {
+				finalFile = strings.ReplaceAll(finalFile, config.FILE_EXTENSION_TEMPLATE, config.FILE_EXTENSION_GO)
+				isTemplate = true
+			}
+
+			if global.Verbose {
+				fmt.Printf("[+] Creating %s file..\n", finalFile)
+			}
+
+			// Check if is template to crete file from it or just copy the file
+			finalFilePath := path.Join(finalPath, finalFile)
+			if isTemplate {
+				err := CreateFileFromTemplate(fileOrDirPath, finalFilePath)
+				if err != nil {
+					return err
+				}
+			} else {
+				CopyFileOrDirectory(fileOrDirPath, finalFilePath)
+			}
+		}
+	}
+
+	return nil
 }
