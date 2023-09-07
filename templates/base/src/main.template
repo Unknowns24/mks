@@ -1,13 +1,14 @@
 package main
 
 import (
-	"%%PACKAGE_NAME%%/src/mks_modules"
+	"%%PACKAGE_NAME%%/mks_modules"
 	"%%PACKAGE_NAME%%/src/utils"
 	"fmt"
+	"sync"
 )
 
 func main() {
-	config, err := utils.LoadConfig() // Getting the ENV Values
+	err := utils.LoadConfig() // Getting the ENV Values
 	if err != nil {
 		fmt.Println("[-] Fatal Error!\nCannot load config file:", err)
 		return

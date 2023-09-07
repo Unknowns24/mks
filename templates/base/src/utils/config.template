@@ -9,12 +9,11 @@ var ENV Config
 
 type Config struct {
 	// General config
-	APP_NAME  string `mapstructure:"APP_NAME"`
-	APP_PORT  string `mapstructure:"APP_PORT"`
+	APP_NAME string `mapstructure:"APP_NAME"`
 }
 
 // LoadConfig reads configuration from file or enviroment variables
-func LoadConfig() (config Config, err error) {
+func LoadConfig() (err error) {
 	viper.AddConfigPath("./")
 	viper.AddConfigPath("./..")
 	viper.AddConfigPath("/")
@@ -29,10 +28,6 @@ func LoadConfig() (config Config, err error) {
 		return
 	}
 
-	err = viper.Unmarshal(&config)
+	err = viper.Unmarshal(&ENV)
 	return
-}
-
-func PublishCfg(c Config) {
-	ENV = c
 }

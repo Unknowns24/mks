@@ -1,3 +1,2 @@
 #General config
 APP_NAME="%APP_NAME%"
-APP_PORT=":%APP_PORT%"
