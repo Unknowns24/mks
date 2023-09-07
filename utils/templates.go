@@ -16,7 +16,7 @@ import (
 * CREATE FILES FROM TEMPLATES *
 *******************************/
 
-// Create files from templates wich only needs to changes %PACKAGE_NAME%
+// Create files from templates wich only needs to changes %%PACKAGE_NAME%%
 func CreateFileFromTemplate(templatePath, serviceName, finalPath string) error {
 	// Read template content
 	templateContent, err := os.ReadFile(templatePath)
