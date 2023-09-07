@@ -126,7 +126,7 @@ func createBaseFiles() error {
 	appEnvTemplatePath := filepath.Join(global.TemplatesFolderPath, config.FOLDER_OTHERS, config.FILE_ENVCONFIG_APP)
 	appEnvExampleFinalPath := filepath.Join(global.BasePath, config.FILE_CONFIG_ENVEXAMPLE)
 
-	err := utils.CreateFileFromTemplateWithCustomReplace(appEnvTemplatePath, appEnvExampleFinalPath, envReplaces)
+	err = utils.CreateFileFromTemplateWithCustomReplace(appEnvTemplatePath, appEnvExampleFinalPath, envReplaces)
 	if err != nil {
 		return err
 	}
