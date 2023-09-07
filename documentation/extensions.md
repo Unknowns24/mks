@@ -53,20 +53,24 @@ func unload<TemplateName>() {
 
 #### `this.prompts file code example:`
 
-In [this](./prompts.md) file you could see more details about prompts structure and validation types
+The placeholder `%%PACKAGE_NAME%%` must not appear on a `this.prompt` file, this placeholder is global
+for all `mks` template **files**.
 
 ```json
 {
 	"prompts": [
 		{
 			"type": "replace",
+			"prompt": "Set the value of my placeholder: ",
 			"default": "",
-			"placeholder": "%%PACKAGE_NAME%%",
+			"placeholder": "%%SOME_PLACEHOLDER%%",
 			"validate": "none"
 		}
 	]
 }
 ```
+
+In [this](./prompts.md) file you could see more details about prompts structure and validation types
 
 #### `this.depends file code example:`
 
