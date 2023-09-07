@@ -1,0 +1,11 @@
+{
+    "prompts": [
+        { 
+            "type": "replace", 
+            "default": "", 
+            "prompt": "Set the JWT auth key: "
+            "placeholder": "%%JWT_TOKEN%%, 
+            "validate": "none" 
+        }
+    ]
+}

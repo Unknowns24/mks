@@ -1,0 +1,11 @@
+{
+    "prompts": [
+        { 
+            "type": "replace", 
+            "default": "", 
+            "prompt": "Set the gRPC server port: "
+            "placeholder": "%%GRPC_PORT%%, 
+            "validate": "none" 
+        }
+    ]
+}

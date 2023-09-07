@@ -1,1 +1,1 @@
-APP_JWT_TOKEN="%JWT_TOKEN%" ==> make sure is the same along all microservices
+APP_JWT_TOKEN="%%JWT_TOKEN%%" ==> make sure is the same along all microservices
