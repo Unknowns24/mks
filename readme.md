@@ -81,7 +81,7 @@ mks supports the following features:
 
 ## Templates
 
-If you want to create a template, [this](./extensions.md) are the requirements of the file structure that the template requires to works fine. Template should be a .zip file and installed with **mks install** command.
+If you want to create a template, [this](./documentation/extensions.md) are the requirements of the file structure that the template requires to works fine. Template should be a .zip file and installed with **mks install** command.
 
 ## License
 
