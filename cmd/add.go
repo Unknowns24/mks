@@ -16,10 +16,7 @@ func NewAddCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			feature := args[0]
 
-			validFeature, err := manager.IsValidFeature(feature)
-			if err != nil {
-				return err
-			}
+			validFeature := manager.IsValidFeature(feature)
 
 			// Validate feature argument
 			if !validFeature {
