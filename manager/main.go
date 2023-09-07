@@ -104,7 +104,10 @@ func createBaseFiles() error {
 	****************************************/
 
 	mksBaseFolder := path.Join(global.TemplatesFolderPath, config.FOLDER_BASE)
-	utils.ImportBaseContent(mksBaseFolder, global.BasePath)
+	err := utils.ImportBaseContent(mksBaseFolder, global.BasePath)
+	if err != nil {
+		return err
+	}
 
 	/***********
 	* ENV FILE *
