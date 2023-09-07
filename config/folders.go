@@ -6,6 +6,7 @@ const (
 	FOLDER_ADDONS       = "addons"
 	FOLDER_OTHERS       = "others"
 	FOLDER_TEMPLATES    = "templates"
+	FOLDER_MKS_MODULES  = "mks_modules"
 	FOLDER_TMP_TEMPLATE = "template"
 )
 
