@@ -2,7 +2,7 @@ package queues
 
 import (
 	"context"
-	"%PACKAGE_NAME%/src/utils"
+	"%%PACKAGE_NAME%%/src/utils"
 	"encoding/json"
 	"fmt"
 

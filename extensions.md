@@ -71,7 +71,7 @@ func unload<TemplateName>() {
 {
     "type": "replace",
     "default": "",
-    "placeholder": "%PACKAGE_NAME%",
+    "placeholder": "%%PACKAGE_NAME%%",
     "validate": validationType
 }
 ```

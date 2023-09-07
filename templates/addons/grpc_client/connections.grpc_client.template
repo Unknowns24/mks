@@ -1,8 +1,8 @@
 package connections
 
 import (
-	pb "%PACKAGE_NAME%/src/proto"
-	"%PACKAGE_NAME%/src/utils"
+	pb "%%PACKAGE_NAME%%/src/proto"
+	"%%PACKAGE_NAME%%/src/utils"
 	"context"
 	"time"
 

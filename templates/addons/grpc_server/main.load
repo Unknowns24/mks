@@ -1,0 +1,33 @@
+package mks_modules
+
+import (
+	pb "%%PACKAGE_NAME%%/src/proto"
+	"%%PACKAGE_NAME%%/src/utils"
+	"%%PACKAGE_NAME%%/src/controllers"
+    "net"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+)
+
+func loadgrpc_server() {
+    WaitGroup.Add(1)
+
+    go func() {
+        listener, err := net.Listen("tcp", utils.ENV.APP_GRPC_PORT)
+        if err != nil {
+            panic(fmt.Sprintf("cannot create tcp connection \nError:\n%s", err.Error()))
+        }
+
+        gRPCServer := grpc.NewServer()
+
+        pb.Register%GRPC_MY_SERVICE_NAME%Server(gRPCServer, &controllers.Server{})
+
+        err = gRPCServer.Serve(listener)
+        if err != nil {
+            panic(fmt.Sprintf("cannot initialize grpc server \nError:\n%s", err.Error()))
+        }
+
+        WaitGroup.Done()
+    }()
+}
