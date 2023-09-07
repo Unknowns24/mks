@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/unknowns24/mks/config"
 	"github.com/unknowns24/mks/global"
@@ -44,7 +43,6 @@ func GenerateMicroservice(serviceName string, features []string) error {
 	}
 
 	if global.Verbose {
-		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating base files..")
 	}
 
@@ -122,7 +120,6 @@ func createBaseFiles() error {
 
 	// Create the utils path for the required base files
 	if global.Verbose {
-		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating utils files directory..")
 	}
 
@@ -133,7 +130,6 @@ func createBaseFiles() error {
 
 	// Create utils/config.go using template
 	if global.Verbose {
-		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating utils/config.go file..")
 	}
 
@@ -147,7 +143,6 @@ func createBaseFiles() error {
 
 	// Create utils/request.go using template
 	if global.Verbose {
-		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating utils/request.go file..")
 	}
 
@@ -165,7 +160,6 @@ func createBaseFiles() error {
 
 	// Create the routes path for the required base files
 	if global.Verbose {
-		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating routes files directory..")
 	}
 
@@ -176,7 +170,6 @@ func createBaseFiles() error {
 
 	// Create routes/mainRoutes.go using template
 	if global.Verbose {
-		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating routes/mainRoutes.go file..")
 	}
 
@@ -194,7 +187,6 @@ func createBaseFiles() error {
 
 	// Create the routes path for the required base files
 	if global.Verbose {
-		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating controllers files directory..")
 	}
 
@@ -205,7 +197,6 @@ func createBaseFiles() error {
 
 	// Create controllers/testController.go using template
 	if global.Verbose {
-		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating controllers/testController.go file..")
 	}
 
@@ -223,7 +214,6 @@ func createBaseFiles() error {
 
 	// Create app.env.example using template
 	if global.Verbose {
-		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating app.env.example file..")
 	}
 
@@ -254,7 +244,6 @@ func createBaseFiles() error {
 
 	// Create app.env using template
 	if global.Verbose {
-		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating app.env file..")
 	}
 
@@ -270,7 +259,6 @@ func createBaseFiles() error {
 
 	// Create .gitignore file
 	if global.Verbose {
-		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating .gitignore file..")
 	}
 
@@ -288,7 +276,6 @@ func createBaseFiles() error {
 
 	// Create Dockerfile using template
 	if global.Verbose {
-		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Creating Dockerfile file..")
 	}
 
@@ -306,7 +293,6 @@ func createBaseFiles() error {
 
 	// Execute "go mod init" command in the basePath directory
 	if global.Verbose {
-		time.Sleep(time.Second / 5) // sleep 200ms
 		fmt.Println("[+] Running go mod init..")
 	}
 
