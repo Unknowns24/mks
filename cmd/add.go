@@ -11,7 +11,7 @@ import (
 func NewAddCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add [feature]",
-		Short: "Add a feature to a microservice",
+		Short: "Add a feature to your application",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			feature := args[0]

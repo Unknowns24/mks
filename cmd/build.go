@@ -12,7 +12,7 @@ import (
 func NewBuildCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "build [name]",
-		Short: "Create a microservice with custom features",
+		Short: "Create an application with custom features",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serviceName := args[0]
@@ -28,12 +28,12 @@ func NewBuildCmd() *cobra.Command {
 			}
 
 			// Main function start
-			return manager.GenerateMicroservice(serviceName, features)
+			return manager.GenerateApplication(serviceName, features)
 		},
 	}
 
 	cmd.Flags().BoolVarP(&global.Verbose, "verbose", "v", false, "Enable verbose mode")
-	cmd.Flags().StringSlice("features", []string{}, "Features required for the microservice")
+	cmd.Flags().StringSlice("features", []string{}, "Features required for the application")
 
 	return cmd
 }
