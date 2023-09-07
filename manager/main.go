@@ -44,7 +44,7 @@ func GenerateApplication(serviceName string, features []string) error {
 	}
 
 	if global.Verbose {
-		fmt.Println("[+] Creating base files..")
+		fmt.Println("[-] Creating base files..")
 	}
 
 	// Create all base files
@@ -104,10 +104,7 @@ func createBaseFiles() error {
 	****************************************/
 
 	mksBaseFolder := path.Join(global.TemplatesFolderPath, config.FOLDER_BASE)
-	err := utils.ImportBaseContent(mksBaseFolder, global.BasePath)
-	if err != nil {
-		return err
-	}
+	utils.ImportBaseContent(mksBaseFolder, global.BasePath)
 
 	/***********
 	* ENV FILE *
@@ -126,7 +123,7 @@ func createBaseFiles() error {
 	appEnvTemplatePath := filepath.Join(global.TemplatesFolderPath, config.FOLDER_OTHERS, config.FILE_ENVCONFIG_APP)
 	appEnvExampleFinalPath := filepath.Join(global.BasePath, config.FILE_CONFIG_ENVEXAMPLE)
 
-	err = utils.CreateFileFromTemplateWithCustomReplace(appEnvTemplatePath, appEnvExampleFinalPath, envReplaces)
+	err := utils.CreateFileFromTemplateWithCustomReplace(appEnvTemplatePath, appEnvExampleFinalPath, envReplaces)
 	if err != nil {
 		return err
 	}
