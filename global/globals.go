@@ -12,8 +12,8 @@ var (
 	InstalledTemplates  = []string{}
 )
 
-// Microservice global variables
+// Application global variables
 var (
-	BasePath    = "" // Current microservice inside path
-	ServiceName = "" // Current microservice module name
+	BasePath    = "" // Current application inside path
+	ServiceName = "" // Current application module name
 )
