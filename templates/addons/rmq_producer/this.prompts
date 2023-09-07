@@ -1,0 +1,39 @@
+{
+    "prompts": [
+        { 
+            "type": "replace", 
+            "default": "", 
+            "prompt": "Set RabbitMQ server host: "
+            "placeholder": "%%RMQ_HOST%%, 
+            "validate": "none" 
+        },
+        { 
+            "type": "replace", 
+            "default": "", 
+            "prompt": "Set RabbitMQ server port: "
+            "placeholder": "%%RMQ_PORT%%, 
+            "validate": "none" 
+        },
+        { 
+            "type": "replace", 
+            "default": "", 
+            "prompt": "Set RabbitMQ server user: "
+            "placeholder": "%%RMQ_USER%%, 
+            "validate": "none" 
+        },
+        { 
+            "type": "replace", 
+            "default": "", 
+            "prompt": "Set RabbitMQ server password: "
+            "placeholder": "%%RMQ_PASS%%, 
+            "validate": "none" 
+        },
+        { 
+            "type": "replace", 
+            "default": "", 
+            "prompt": "Set RabbitMQ exchange name: "
+            "placeholder": "%%RMQ_EXCHANGE%%, 
+            "validate": "none" 
+        }
+    ]
+}
