@@ -1,10 +1,12 @@
 package utils
 
 import (
+	"errors"
 	"go/ast"
 	"go/parser"
 	"go/token"
 	"os"
+	"path/filepath"
 	"regexp"
 )
 
@@ -12,10 +14,41 @@ import (
 /* ********** VALIDATORS ********* */
 /* ******************************* */
 
+func TempFileWithDummyPlaceholder(filePath string) (string, error) {
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", err
+	}
+
+	// CHeck place holders in file %%([A-Z_]+)%% Can't be start with _, and length must be at least 1
+	reCheck := regexp.MustCompile("%%(_[A-Z_]+|[A-Z_]{0})%%")
+	if matches := reCheck.FindAll(content, -1); len(matches) > 0 {
+		return "", errors.New("Placeholders in file can't start with _, and length must be at least 1")
+	}
+
+	// Reemplazamos todas las ocurrencias de %%([A-Z_]+)%% con el string resultante
+	reReplace := regexp.MustCompile("%%([A-Z_]+)%%")
+	modifiedContent := reReplace.ReplaceAll(content, []byte("$1"))
+
+	tempDir, err := MakeTempDirectory()
+	if err != nil {
+		return "", err
+	}
+
+	// Creando el archivo temporal con el mismo nombre en el directorio temporal
+	tempFilePath := tempDir + "/" + filepath.Base(filePath)
+	err = os.WriteFile(tempFilePath, modifiedContent, 0644)
+	if err != nil {
+		return "", err
+	}
+
+	return tempFilePath, nil
+}
+
 // this functions check if file is a "valid" go file (finds package keyword, but not check syntax)
-func IsPseudoValidGoFile(filename string) (bool, error) {
+func IsPseudoValidGoFile(filePath string) (bool, error) {
 	// Lee el contenido del archivo
-	content, err := os.ReadFile(filename)
+	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return false, err
 	}
@@ -35,16 +68,26 @@ func IsPseudoValidGoFile(filename string) (bool, error) {
 }
 
 // this function checks if is a valid go file
-func CheckSyntaxGoFile(filename string) (bool, error) {
+func CheckSyntaxGoFile(filePath string) (bool, error) {
+	tempFilePath, err := TempFileWithDummyPlaceholder(filePath)
+	if err != nil {
+		return false, err
+	}
+
 	fs := token.NewFileSet()
-	_, err := parser.ParseFile(fs, filename, nil, parser.AllErrors)
+	_, err = parser.ParseFile(fs, tempFilePath, nil, parser.AllErrors)
 	return (err == nil), err
 }
 
 // this function checks if a certain package name exists in a file (golang file)
-func CheckPackageNameInFile(filename, expectedPackageName string) (bool, error) {
+func CheckPackageNameInFile(filePath string, expectedPackageName string) (bool, error) {
+	tempFilePath, err := TempFileWithDummyPlaceholder(filePath)
+	if err != nil {
+		return false, err
+	}
+
 	fs := token.NewFileSet()
-	node, err := parser.ParseFile(fs, filename, nil, parser.PackageClauseOnly)
+	node, err := parser.ParseFile(fs, tempFilePath, nil, parser.PackageClauseOnly)
 	if err != nil {
 		return false, err
 	}
@@ -52,9 +95,14 @@ func CheckPackageNameInFile(filename, expectedPackageName string) (bool, error) 
 }
 
 // this function checks if a certain function exists in a file (golang file)
-func FunctionExistsInFile(filename, functionName string) (bool, error) {
+func FunctionExistsInFile(filePath string, functionName string) (bool, error) {
+	tempFilePath, err := TempFileWithDummyPlaceholder(filePath)
+	if err != nil {
+		return false, err
+	}
+
 	fs := token.NewFileSet()
-	node, err := parser.ParseFile(fs, filename, nil, 0)
+	node, err := parser.ParseFile(fs, tempFilePath, nil, 0)
 	if err != nil {
 		return false, err
 	}
