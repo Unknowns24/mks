@@ -9,15 +9,15 @@ import (
 	"github.com/unknowns24/mks/global"
 )
 
-func IsValidFeature(feature string) (bool, error) {
+func IsValidFeature(feature string) bool {
 	// Check if requested feature is installed
 	for _, template := range global.InstalledTemplates {
 		if template == feature {
-			return true, nil
+			return true
 		}
 	}
 
-	return false, fmt.Errorf("unknown feature: %s", feature)
+	return false
 }
 
 func AddFeature(feature string) error {
@@ -72,6 +72,8 @@ func AddAllFeatures() error {
 }
 
 func InstallFeature(templatePath string) error {
+	fmt.Println(templatePath)
+
 	// To Implement
 	return nil
 }
