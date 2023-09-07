@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/unknowns24/mks/config"
 	"github.com/unknowns24/mks/global"
@@ -14,6 +15,9 @@ import (
 type dependsFileFormat struct {
 	DependsOn []string `json:"dependsOn"`
 }
+
+var processedDependencies = make(map[string]bool)
+var currentProcessing = make(map[string]bool)
 
 /*
 	This functions will return a boolean true if all dependencies are installed on templates addons folder
@@ -68,54 +72,63 @@ func loadDependencies(dependsFilePath string) (dependsFileFormat, error) {
 	return dependencies, nil
 }
 
-// deepFirstSearch to perform the topological sort
-func deepFirstSearch(node string, visited map[string]bool, stack *[]string, dependencies map[string][]string) bool {
-	visited[node] = true
-	for _, neighbor := range dependencies[node] {
-		if !visited[neighbor] {
-			if !deepFirstSearch(neighbor, visited, stack, dependencies) {
-				return false // cycle detected
-			}
-		} else if !SliceContainsElement(*stack, neighbor) {
-			// If the neighbor has been visited but is not in the stack, it means there's a cycle
-			return false
-		}
+func processDependencies(filePath string, result *[]string) error {
+	// Load the dependencies of the current file
+	featureDependencies, err := loadDependencies(filePath)
+	if err != nil {
+		return err
 	}
 
-	// Add the node to the output stack
-	*stack = append(*stack, node)
-	return true
+	for _, feature := range featureDependencies.DependsOn {
+		// If this dependency is currently being processed, it indicates a cycle
+		if currentProcessing[feature] {
+			return fmt.Errorf("cyclic redundancy detected on %s", feature)
+		}
+
+		// If this dependency has already been processed, move to the next
+		if processedDependencies[feature] {
+			continue
+		}
+
+		// Mark the dependency as currently being processed
+		currentProcessing[feature] = true
+
+		// Path to the dependency file of the current feature
+		dependencyFilePath := path.Join(global.TemplatesFolderPath, config.FOLDER_ADDONS, feature, config.FILE_ADDON_TEMPLATE_DEPENDS)
+
+		// If a dependency file exists for this feature, process it recursively
+		if FileOrDirectoryExists(dependencyFilePath) {
+			err := processDependencies(dependencyFilePath, result)
+			if err != nil {
+				return err
+			}
+		}
+
+		// Mark the dependency as processed
+		processedDependencies[feature] = true
+		delete(currentProcessing, feature)
+
+		// Add the current feature to the result
+		*result = append(*result, feature)
+	}
+
+	return nil
 }
 
-func GetDependenciesInstallationOrder(filePaths []string) ([]string, error) {
-	dependencies := make(map[string][]string)
+func GetDependenciesInstallationOrder(dependencyFilePath string) ([]string, error) {
+	var result []string
+	fatherFeatureName := filepath.Base(filepath.Dir(dependencyFilePath))
 
-	// Load the dependencies of each file into the dependencies map
-	for _, filename := range filePaths {
-		t, err := loadDependencies(filename)
-		if err != nil {
-			return []string{}, fmt.Errorf("error loading dependencies: %s", err)
-		}
-		dependencies[filename] = t.DependsOn
+	err := processDependencies(dependencyFilePath, &result)
+	if err != nil {
+		return nil, err
 	}
 
-	visited := make(map[string]bool)
-	var stack []string
-
-	for node := range dependencies {
-		if !visited[node] {
-			if !deepFirstSearch(node, visited, &stack, dependencies) {
-				return []string{}, errors.New("a cycle in dependencies has been detected")
-			}
-		}
+	if SliceContainsElement(result, fatherFeatureName) {
+		return nil, errors.New("cycle dependency detected, posible incompatibility on some of your templates")
 	}
 
-	var finalStack []string
+	result = append(result, fatherFeatureName)
 
-	// The stack now contains the order in which the templates should be included
-	for i := len(stack) - 1; i >= 0; i-- {
-		finalStack = append(finalStack, stack[i])
-	}
-
-	return finalStack, nil
+	return result, nil
 }
