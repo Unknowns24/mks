@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"%PACKAGE_NAME%/src/utils"
+	"%%PACKAGE_NAME%%/src/utils"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"

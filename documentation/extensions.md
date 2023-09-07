@@ -51,7 +51,28 @@ func unload<TemplateName>() {
 }
 ```
 
-#### `.depends file code example:`
+#### `this.prompts file code example:`
+
+The placeholder `%%PACKAGE_NAME%%` must not appear on a `this.prompt` file, this placeholder is global
+for all `mks` template **files**.
+
+```json
+{
+	"prompts": [
+		{
+			"type": "replace",
+			"prompt": "Set the value of my placeholder: ",
+			"default": "",
+			"placeholder": "%%SOME_PLACEHOLDER%%",
+			"validate": "none"
+		}
+	]
+}
+```
+
+In [this](./prompts.md) file you could see more details about prompts structure and validation types
+
+#### `this.depends file code example:`
 
 ```json
 { "dependsOn": ["mysql", "jwt"] }
@@ -64,23 +85,3 @@ func unload<TemplateName>() {
 #### `.template file example:`
 
 -   \<folder1\>.\<folder2\>.\<folderN\>.\<filename\>.template => this file code will be copied in: <span style="color:orange">src/</span>folder1/folder2/folderN/filename.go
-
-### Prompts structure (this.prompts)
-
-```json
-{
-    "type": "replace",
-    "default": "",
-    "placeholder": "%PACKAGE_NAME%",
-    "validate": validationType
-}
-```
-
-#### `ValidationTypes:`
-
-| Validation                                                 | Min Range   | Max Range  |    Type     |
-| ---------------------------------------------------------- | ----------- | ---------- | :---------: |
-| number                                                     | -2147483648 | 2147483647 |     int     |
-| numberRange(min int, max int)                              | -2147483648 | 2147483647 |     int     |
-| alphabet(caseSensitive bool, minLenght int, maxLenght int) | 0           | 65536      | string [AZ] |
-| none                                                       |             |            |             |

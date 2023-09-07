@@ -81,7 +81,7 @@ mks supports the following features:
 
 ## Templates
 
-If you want to create a template, [this](./extensions.md) are the requirements of the file structure that the template requires to works fine. Template should be a .zip file and installed with **mks install** command.
+If you want to create a template, [this](./documentation/extensions.md) are the requirements of the file structure that the template requires to works fine. Template should be a .zip file and installed with **mks install** command.
 
 ## License
 
@@ -91,6 +91,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 Contributions are welcome! If you find any issues or would like to add new features, feel free to open an issue or submit a pull request on the GitHub repository: https://github.com/unknowns24/mks.
 
-## Acknowledgments
+## Authors
 
--   The CLI is built using the Cobra library: https://github.com/spf13/cobra
+-   [Unknowns24](https://github.com/unknowns24)
+-   [SERBice](https://github.com/SERBice)

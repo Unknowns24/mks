@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"%PACKAGE_NAME%/src/utils"
+	"%%PACKAGE_NAME%%/src/utils"
 
 	"github.com/gofiber/fiber/v2"
 )

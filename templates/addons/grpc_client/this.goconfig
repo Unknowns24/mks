@@ -1,0 +1,3 @@
+// gRPC
+%%GRPC_SERVER_NAME%%_GRPC_HOST  string `mapstructure:"%%GRPC_SERVER_NAME%%_GRPC_HOST"`
+%%GRPC_SERVER_NAME%%_GRPC_PORT  string `mapstructure:"%%GRPC_SERVER_NAME%%_GRPC_PORT"`
