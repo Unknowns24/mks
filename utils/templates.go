@@ -301,7 +301,7 @@ func ImportBaseContent(sourcePath, finalPath string) error {
 
 			// If file extension is .template change it for .go on final file
 			finalFile := fileOrDir
-			if strings.Contains(finalFile, config.FILE_EXTENSION_TEMPLATE) {
+			if strings.HasSuffix(finalFile, config.FILE_EXTENSION_TEMPLATE) {
 				finalFile = strings.ReplaceAll(finalFile, config.FILE_EXTENSION_TEMPLATE, config.FILE_EXTENSION_GO)
 				isTemplate = true
 			}
