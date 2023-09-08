@@ -126,7 +126,7 @@ func ExtendFile(filePath, newContent string) error {
 	}
 
 	// Write the updated content to the env file
-	err = ioutil.WriteFile(filePath, []byte(finalContent), 0644)
+	err = ioutil.WriteFile(filePath, []byte(finalContent), config.FOLDER_PERMISSION)
 	if err != nil {
 		return err
 	}
@@ -168,7 +168,7 @@ func AddGoConfigFromString(newConfig string) error {
 	newContent := fmt.Sprintf("%s\n%s\n%s", strings.Join(lines[:configClosingBraceIndex], "\n"), newConfig, strings.Join(lines[configClosingBraceIndex:], "\n"))
 
 	// Write the updated content to the file
-	err = ioutil.WriteFile(filePath, []byte(newContent), 0644)
+	err = ioutil.WriteFile(filePath, []byte(newContent), config.FOLDER_PERMISSION)
 	if err != nil {
 		return err
 	}
@@ -192,13 +192,13 @@ func AddEnvConfigFromString(newConfig string) error {
 	newContent := fmt.Sprintf("%s\n%s", content, newConfig)
 
 	// Write the updated content to the env file
-	err = ioutil.WriteFile(envFilePath, []byte(newContent), 0644)
+	err = ioutil.WriteFile(envFilePath, []byte(newContent), config.FOLDER_PERMISSION)
 	if err != nil {
 		return err
 	}
 
 	// Write the updated content to the example env file
-	err = ioutil.WriteFile(exampleEnvfilePath, []byte(newContent), 0644)
+	err = ioutil.WriteFile(exampleEnvfilePath, []byte(newContent), config.FOLDER_PERMISSION)
 	if err != nil {
 		return err
 	}
