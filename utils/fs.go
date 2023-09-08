@@ -3,13 +3,16 @@ package utils
 import (
 	"archive/zip"
 	"errors"
-	"fmt"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
+	"github.com/google/uuid"
 	cp "github.com/otiai10/copy"
+	"github.com/unknowns24/mks/config"
+	"github.com/unknowns24/mks/global"
 )
 
 // Get this executable path
@@ -30,17 +33,13 @@ func FileOrDirectoryExists(filePath string) bool {
 	return true
 }
 
-// Make directory if not exists (including parents)
-func MakeDirectoryIfNotExists(dirPath string, perms os.FileMode) error {
-	if perms == 0 {
-		perms = 0755
-	}
-
+// Make directory
+func MakeDirectory(dirPath string, perms os.FileMode) error {
 	if !FileOrDirectoryExists(dirPath) {
 		return os.MkdirAll(dirPath, perms)
 	}
-	// return error if directory already exists
-	return errors.New("directory already exists")
+
+	return nil
 }
 
 // move file or directory (with contents) to new location
@@ -48,9 +47,11 @@ func MoveFileOrDirectory(sourcePath string, destPath string) error {
 	if !FileOrDirectoryExists(sourcePath) {
 		return errors.New("source file or directory does not exist")
 	}
+
 	if !FileOrDirectoryExists(destPath) {
 		return os.Rename(sourcePath, destPath)
 	}
+
 	return errors.New("destination file or directory already exists")
 }
 
@@ -59,9 +60,11 @@ func CopyFileOrDirectory(sourcePath string, destPath string) error {
 	if !FileOrDirectoryExists(sourcePath) {
 		return errors.New("source file or directory does not exist")
 	}
+
 	if !FileOrDirectoryExists(destPath) {
 		return cp.Copy(sourcePath, destPath)
 	}
+
 	return errors.New("destination file or directory already exists")
 }
 
@@ -70,83 +73,69 @@ func DeleteFileOrDirectory(filePath string) error {
 	if !FileOrDirectoryExists(filePath) {
 		return errors.New("file or directory does not exist")
 	}
+
 	return os.RemoveAll(filePath)
 }
 
 // Unzip file to destination
-func Unzip(src string, dest string) error {
+func Unzip(src, dest string) error {
 	r, err := zip.OpenReader(src)
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err := r.Close(); err != nil {
-			panic(err)
-		}
-	}()
-
-	os.MkdirAll(dest, 0755)
-
-	// Closure to address file descriptors issue with all the deferred .Close() methods
-	extractAndWriteFile := func(f *zip.File) error {
-		rc, err := f.Open()
-		if err != nil {
-			return err
-		}
-		defer func() {
-			if err := rc.Close(); err != nil {
-				panic(err)
-			}
-		}()
-
-		path := filepath.Join(dest, f.Name)
-
-		// Check for ZipSlip (Directory traversal)
-		if !strings.HasPrefix(path, filepath.Clean(dest)+string(os.PathSeparator)) {
-			return fmt.Errorf("illegal file path: %s", path)
-		}
-
-		if f.FileInfo().IsDir() {
-			os.MkdirAll(path, f.Mode())
-		} else {
-			os.MkdirAll(filepath.Dir(path), f.Mode())
-			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
-			if err != nil {
-				return err
-			}
-			defer func() {
-				if err := f.Close(); err != nil {
-					panic(err)
-				}
-			}()
-
-			_, err = io.Copy(f, rc)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	}
+	defer r.Close()
 
 	for _, f := range r.File {
-		err := extractAndWriteFile(f)
+		filePath := filepath.Join(dest, f.Name)
+
+		if f.FileInfo().IsDir() {
+			os.MkdirAll(filePath, f.Mode())
+			continue
+		}
+
+		if err := os.MkdirAll(filepath.Dir(filePath), config.FOLDER_PERMISSION); err != nil {
+			return err
+		}
+
+		outFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+		if err != nil {
+			return err
+		}
+		defer outFile.Close()
+
+		inFile, err := f.Open()
+		if err != nil {
+			return err
+		}
+		defer inFile.Close()
+
+		_, err = io.Copy(outFile, inFile)
 		if err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 
 // Make temporary directory with random name and return path
-func MakeTempDirectory() (string, error) {
-	// Create temp directory
-	tempDir, err := os.MkdirTemp("", "")
+func MakeTemporalDirectory() (string, error) {
+	//make uuid using google package
+	uuid, err := uuid.NewRandom()
 	if err != nil {
 		return "", err
 	}
 
-	return tempDir, nil
+	// create temporal dir path
+	tempDirPath := path.Join(global.ConfigFolderPath, "temp", uuid.String())
+
+	// create directory
+	err = MakeDirectory(tempDirPath, config.FOLDER_PERMISSION)
+
+	if err != nil {
+		return "", err
+	}
+
+	return tempDirPath, nil
 }
 
 // Read file content and return it

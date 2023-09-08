@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/unknowns24/mks/utils"
 )
 
 var rootCmd = &cobra.Command{
@@ -13,11 +12,6 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
-	// Set global variables
-	utils.SetExecutablePath()
-	utils.SetTemplatesFolderPathGlobal()
-	utils.SetCurrentInstalledTemplates()
-
 	// Start main command
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)

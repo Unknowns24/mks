@@ -6,8 +6,11 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
+
+	"github.com/unknowns24/mks/config"
 )
 
 /* ******************************* */
@@ -20,51 +23,32 @@ func TempFileWithDummyPlaceholder(filePath string) (string, error) {
 		return "", err
 	}
 
-	// CHeck place holders in file %%([A-Z_]+)%% Can't be start with _, and length must be at least 1
+	// Check place holders in file %%([A-Z_]+)%% Can't be start with _, and length must be at least 1
 	reCheck := regexp.MustCompile("%%(_[A-Z_]+|[A-Z_]{0})%%")
 	if matches := reCheck.FindAll(content, -1); len(matches) > 0 {
-		return "", errors.New("Placeholders in file can't start with _, and length must be at least 1")
+		return "", errors.New("placeholders in file can't start with _, and length must be at least 1")
 	}
 
-	// Reemplazamos todas las ocurrencias de %%([A-Z_]+)%% con el string resultante
+	// Replace all the occurencies of %%([A-Z_]+)%% with resultant string
 	reReplace := regexp.MustCompile("%%([A-Z_]+)%%")
 	modifiedContent := reReplace.ReplaceAll(content, []byte("$1"))
 
-	tempDir, err := MakeTempDirectory()
+	// Create temporal directory to save temp file
+	tempDir, err := MakeTemporalDirectory()
 	if err != nil {
 		return "", err
 	}
 
-	// Creando el archivo temporal con el mismo nombre en el directorio temporal
-	tempFilePath := tempDir + "/" + filepath.Base(filePath)
-	err = os.WriteFile(tempFilePath, modifiedContent, 0644)
+	// Final path of the temp file will be -> tempDir/fileName
+	finalTempFilePath := path.Join(tempDir, filepath.Base(filePath))
+
+	// Save the file on the temp folder
+	err = os.WriteFile(finalTempFilePath, modifiedContent, config.FOLDER_PERMISSION)
 	if err != nil {
 		return "", err
 	}
 
-	return tempFilePath, nil
-}
-
-// this functions check if file is a "valid" go file (finds package keyword, but not check syntax)
-func IsPseudoValidGoFile(filePath string) (bool, error) {
-	// Lee el contenido del archivo
-	content, err := os.ReadFile(filePath)
-	if err != nil {
-		return false, err
-	}
-
-	// Expresión regular para validar el archivo Go
-	// ^(?:[\s]*|//.*\n|/\*.*?\*/)*package\s+\w+
-	// ^: Comienza al inicio del texto
-	// (?:...): Grupo no capturador
-	// [\s]*: Cualquier cantidad de espacios en blanco (incluidos saltos de línea)
-	// //.*\n: Comentario de línea
-	// /\*.*?\*/: Comentario multilínea (no greedy)
-	// package\s+\w+: La línea "package XXXXXX"
-	pattern := `^(?:[\s]*|//.*\n|/\*.*?\*/)*package\s+\w+`
-	regex := regexp.MustCompile(pattern)
-
-	return regex.Match(content), nil
+	return finalTempFilePath, nil
 }
 
 // this function checks if is a valid go file

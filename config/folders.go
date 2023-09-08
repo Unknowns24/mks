@@ -1,7 +1,10 @@
 package config
 
+const FOLDER_PERMISSION = 0755
+
 // Mks folders
 const (
+	FOLDER_MKS          = "mks"
 	FOLDER_BASE         = "base"
 	FOLDER_ADDONS       = "addons"
 	FOLDER_OTHERS       = "others"

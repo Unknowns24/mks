@@ -1,2 +1,0 @@
-// gRPC
-APP_GRPC_PORT string `mapstructure:"APP_GRPC_PORT"`

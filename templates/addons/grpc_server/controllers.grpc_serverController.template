@@ -1,9 +1,0 @@
-package controllers
-
-import (
-	pb "%%PACKAGE_NAME%%/src/proto"
-)
-
-type Server struct {
-	pb.Unimplemented%GRPC_MY_SERVICE_NAME%Server
-}

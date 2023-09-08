@@ -12,7 +12,8 @@ func ListCmd() *cobra.Command {
 		Short: "List of templates installed and available to use by mks",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return manager.ListTemplate()
+			manager.ListTemplate()
+			return nil
 		},
 		SilenceUsage: true, // Suppress printing the usage message
 	}
