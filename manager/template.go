@@ -10,13 +10,9 @@ import (
 	"github.com/unknowns24/mks/utils"
 )
 
-func ListTemplate() error {
+func ListTemplate() {
 	fmt.Println("[+] List of templates installed and availables to use:")
-
-	for _, template := range global.InstalledTemplates {
-		fmt.Println(template)
-	}
-	return nil
+	fmt.Println(strings.Join(global.InstalledTemplates, "\n"))
 }
 
 func UninstallTemplate(template string) error {
@@ -31,12 +27,14 @@ func UninstallTemplate(template string) error {
 		return fmt.Errorf("template not installed: %s", template)
 	}
 
-	if utils.FileOrDirectoryExists(path.Join(global.TemplatesFolderPath, config.FOLDER_ADDONS, template)) {
-		utils.DeleteFileOrDirectory(path.Join(global.TemplatesFolderPath, config.FOLDER_ADDONS, template)) // delete template directory
+	templateFolderPath := path.Join(global.UserTemplatesFolderPath, template)
+
+	if utils.FileOrDirectoryExists(templateFolderPath) {
+		utils.DeleteFileOrDirectory(templateFolderPath) // delete template directory
 	}
 
-	if utils.FileOrDirectoryExists(path.Join(global.TemplatesFolderPath, config.FOLDER_ADDONS, template)) {
-		return fmt.Errorf("failed to uninstall template: %s (Try delete folder %s manually)", template, path.Join(global.TemplatesFolderPath, config.FOLDER_ADDONS, template))
+	if utils.FileOrDirectoryExists(templateFolderPath) {
+		return fmt.Errorf("failed to uninstall template: %s (Try delete folder %s manually)", template, templateFolderPath)
 	}
 
 	if global.Verbose {
@@ -52,8 +50,6 @@ func InstallTemplate(template string) error {
 	if global.Verbose {
 		fmt.Println("[+] Checking if template is valid...")
 	}
-
-	addonsPath := path.Join(global.TemplatesFolderPath, config.FOLDER_ADDONS)
 
 	tempDirPath, err := utils.MakeTemporalDirectory()
 	if err != nil {
@@ -144,10 +140,12 @@ func InstallTemplate(template string) error {
 	templateName := dirs[0]
 
 	// check if template name has -main suffix and remove it (it occurs when the template is downloaded from github, by the user or by the program)
-	if strings.HasSuffix(dirs[0], config.NETWORK_GITHUB_BRANCH_SUFFIX) {
-		// delete -main suffix from template name
-		templateName = strings.TrimSuffix(dirs[0], config.NETWORK_GITHUB_BRANCH_SUFFIX)
-	}
+
+	// delete -main suffix from template name
+	templateName = strings.TrimSuffix(templateName, config.NETWORK_GITHUB_BRANCH_SUFFIX)
+
+	// delete mks- prefix from template name
+	templateName = strings.TrimPrefix(templateName, config.NETWORK_GITHUB_TEMPLATE_PREFIX)
 
 	if global.Verbose {
 		fmt.Println("[+] Checking if template is installed...")
@@ -173,9 +171,6 @@ func InstallTemplate(template string) error {
 	for _, templateFile := range templateFiles {
 		if strings.HasSuffix(templateFile, config.FILE_EXTENSION_TEMPLATE) {
 			valid, err := utils.CheckSyntaxGoFile(path.Join(unzippedTemplateFilesPath, templateFile))
-
-			fmt.Println(valid, err)
-			fmt.Println(tempDirPath)
 
 			if !valid || err != nil {
 				utils.DeleteFileOrDirectory(tempDirPath) // delete temporary directory
@@ -231,7 +226,7 @@ func InstallTemplate(template string) error {
 	}
 
 	// move template folder to addons folder and delete folder
-	err = utils.MoveFileOrDirectory(unzippedTemplateFilesPath, path.Join(addonsPath, templateName))
+	err = utils.MoveFileOrDirectory(unzippedTemplateFilesPath, path.Join(global.UserTemplatesFolderPath, templateName))
 	utils.DeleteFileOrDirectory(tempDirPath)
 
 	if err != nil {
