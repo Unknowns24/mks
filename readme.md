@@ -1,6 +1,6 @@
 # MKS CLI
 
-mks is a command-line interface (CLI) tool that helps you generate basic microservices structures with different features. It allows you to quickly set up microservices projects by creating the necessary files and directories based on your requirements.
+mks is a command-line interface (CLI) tool that helps you generate basic application structures with different features. It allows you to quickly set up application projects by creating the necessary files and directories based on your requirements.
 
 ## Installation
 
@@ -12,17 +12,17 @@ go install github.com/unknowns24/mks
 
 ## Usage
 
-### Build a Microservice
+### Build an Application
 
-To create a basic microservice structure, use the `build` command:
+To create a basic application structure, use the `build` command:
 
 ```sh
 mks build [name] --features=[features]
 
 ```
 
--   `name`: The name of the microservice to be generated.
--   `features`: (Optional) Generate microservice with features.
+-   `name`: The name of the application to be generated.
+-   `features`: (Optional) Generate application with features.
 
 _Example:_
 
@@ -33,7 +33,7 @@ mks build ms_apps --features="mysql,jwt"
 
 ### Add a Feature
 
-To add a specific feature to an existing microservice, use the `add` command:
+To add a specific feature to an existing application, use the `add` command:
 
 ```sh
 mks add [feature]
