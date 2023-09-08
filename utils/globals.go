@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"path/filepath"
 
@@ -44,5 +45,24 @@ func SetExecutablePath() error {
 	// Save in a global variable the path to templates folder inside MKS
 	global.ExecutableBasePath = mksDir
 
+	return nil
+}
+
+func SetUserConfigFolderPath() error {
+	configPath, err := os.UserConfigDir()
+	if err != nil {
+		return fmt.Errorf("error happend on config directory: %s", err)
+	}
+
+	mksConfigPath := path.Join(configPath, config.FOLDER_MKS)
+
+	if !FileOrDirectoryExists(mksConfigPath) {
+		err = os.MkdirAll(mksConfigPath, config.FOLDER_PERMISSION)
+		if err != nil {
+			return err
+		}
+	}
+
+	global.ConfigFolderPath = mksConfigPath
 	return nil
 }
