@@ -44,7 +44,7 @@ func GenerateApplication(serviceName string, features []string) error {
 	}
 
 	if global.Verbose {
-		fmt.Println("[-] Creating base files..")
+		fmt.Println("[+] Creating base files..")
 	}
 
 	// Create all base files
