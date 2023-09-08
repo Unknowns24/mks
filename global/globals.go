@@ -7,10 +7,10 @@ var (
 
 // Mks global variables
 var (
-	ConfigFolderPath    = ""
-	TemplatesFolderPath = "" // Path to templates folder inside mks
-	ExecutableBasePath  = ""
-	InstalledTemplates  = []string{}
+	ConfigFolderPath        = ""
+	MksTemplatesFolderPath  = "" // Path to templates folder inside mks
+	UserTemplatesFolderPath = "" // Path to templates folder inside mks
+	InstalledTemplates      = []string{}
 )
 
 // Application global variables
