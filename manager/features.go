@@ -42,8 +42,7 @@ func AddFeature(feature string) error {
 		}
 	}
 
-	// Validating feature
-	addonsPath := path.Join(global.TemplatesFolderPath, config.FOLDER_ADDONS)
+	// Validating and installing features
 	founded := false
 
 	// Check if requested feature is installed
@@ -54,7 +53,7 @@ func AddFeature(feature string) error {
 
 		founded = true
 
-		err = InstallFeature(path.Join(addonsPath, template))
+		err = InstallFeature(path.Join(global.UserTemplatesFolderPath, template))
 		if err != nil {
 			return err
 		}
