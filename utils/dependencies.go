@@ -42,7 +42,7 @@ func ValidateAllDependenciesInstalled(dependsFilePath string) (bool, []string, e
 	notInstalledTemplates := []string{}
 
 	for _, dependency := range parsedFile.DependsOn {
-		templatePath := path.Join(global.TemplatesFolderPath, config.FOLDER_ADDONS, dependency)
+		templatePath := path.Join(global.UserTemplatesFolderPath, dependency)
 
 		if !FileOrDirectoryExists(templatePath) {
 			notInstalledTemplates = append(notInstalledTemplates, dependency)
@@ -94,7 +94,7 @@ func processDependencies(filePath string, result *[]string) error {
 		currentProcessing[feature] = true
 
 		// Path to the dependency file of the current feature
-		dependencyFilePath := path.Join(global.TemplatesFolderPath, config.FOLDER_ADDONS, feature, config.FILE_ADDON_TEMPLATE_DEPENDS)
+		dependencyFilePath := path.Join(global.UserTemplatesFolderPath, feature, config.FILE_ADDON_TEMPLATE_DEPENDS)
 
 		// If a dependency file exists for this feature, process it recursively
 		if FileOrDirectoryExists(dependencyFilePath) {
