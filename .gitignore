@@ -2,3 +2,5 @@ mks.exe
 mks
 main.exe
 main
+.DS_Store
+./*/.DS_Store
