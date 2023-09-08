@@ -103,7 +103,7 @@ func createBaseFiles() error {
 	* IMPORT MKS BASE FILES TO APPLICATION *
 	****************************************/
 
-	mksBaseFolder := path.Join(global.TemplatesFolderPath, config.FOLDER_BASE)
+	mksBaseFolder := path.Join(global.MksTemplatesFolderPath, config.FOLDER_BASE)
 	err := utils.ImportBaseContent(mksBaseFolder, global.BasePath)
 	if err != nil {
 		return err
@@ -123,7 +123,7 @@ func createBaseFiles() error {
 		config.PLACEHOLDER_APP_NAME: global.ServiceName,
 	}
 
-	appEnvTemplatePath := filepath.Join(global.TemplatesFolderPath, config.FOLDER_OTHERS, config.FILE_ENVCONFIG_APP)
+	appEnvTemplatePath := filepath.Join(global.MksTemplatesFolderPath, config.FOLDER_OTHERS, config.FILE_ENVCONFIG_APP)
 	appEnvExampleFinalPath := filepath.Join(global.BasePath, config.FILE_CONFIG_ENVEXAMPLE)
 
 	err = utils.CreateFileFromTemplateWithCustomReplace(appEnvTemplatePath, appEnvExampleFinalPath, envReplaces)
@@ -151,7 +151,7 @@ func createBaseFiles() error {
 		fmt.Println("[+] Creating .gitignore file..")
 	}
 
-	gitIgnoreTemplatePath := filepath.Join(global.TemplatesFolderPath, config.FOLDER_OTHERS, config.FILE_GITIGNORE)
+	gitIgnoreTemplatePath := filepath.Join(global.MksTemplatesFolderPath, config.FOLDER_OTHERS, config.FILE_GITIGNORE)
 	gitIgnoreExampleFinalPath := filepath.Join(global.BasePath, config.FILE_GITIGNORE)
 
 	err = utils.CreateFileFromTemplate(gitIgnoreTemplatePath, gitIgnoreExampleFinalPath)
@@ -168,7 +168,7 @@ func createBaseFiles() error {
 		fmt.Println("[+] Creating Dockerfile file..")
 	}
 
-	dockerTemplatePath := filepath.Join(global.TemplatesFolderPath, config.FOLDER_OTHERS, config.FILE_DOCKER)
+	dockerTemplatePath := filepath.Join(global.MksTemplatesFolderPath, config.FOLDER_OTHERS, config.FILE_DOCKER)
 	dockerFilePath := filepath.Join(global.BasePath, config.FILE_DOCKER)
 
 	err = utils.CreateFileFromTemplate(dockerTemplatePath, dockerFilePath)
