@@ -10,22 +10,17 @@ func main() {
 	* SETTING GLOBAL VARIABLES *
 	****************************/
 
-	err := utils.SetExecutablePath()
-	if err != nil {
-		panic(err)
-	}
-
-	err = utils.SetTemplatesFolderPathGlobal()
-	if err != nil {
-		panic(err)
-	}
-
-	err = utils.SetCurrentInstalledTemplates()
+	err := utils.SetMksTemplatesFolderPath()
 	if err != nil {
 		panic(err)
 	}
 
 	err = utils.SetUserConfigFolderPath()
+	if err != nil {
+		panic(err)
+	}
+
+	err = utils.SetCurrentInstalledTemplates()
 	if err != nil {
 		panic(err)
 	}
