@@ -27,6 +27,7 @@ const (
 // Template Files Addons
 const (
 	FILE_ADDON_TEMPLATE_DEPENDS     = "this.depends"
+	FILE_ADDON_TEMPLATE_PROMPTS     = "this.prompts"
 	FILE_ADDON_TEMPLATE_MAIN_LOAD   = "main.load"
 	FILE_ADDON_TEMPLATE_MAIN_UNLOAD = "main.unload"
 )
@@ -45,4 +46,9 @@ const (
 // Zip files
 const (
 	FILE_ZIP_TEMPLATE = "template.zip"
+)
+
+// Mks modules files
+const (
+	FILE_MKS_INSTALLED_FEATURES = "installed_features.json"
 )
