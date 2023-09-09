@@ -1,20 +1,31 @@
 package manager
 
-//ClearCache is a function that clears the mks cache directory
+import (
+	"github.com/unknowns24/mks/global"
+	"github.com/unknowns24/mks/utils"
+)
+
+// ClearCacheAll is a function that clears the mks cache directory and temporals
 func ClearCacheAll() {
-	//TODO: Finish HIM (FATALITY!)
+	ClearCacheFiles()
+	ClearCacheZip()
+	ClearCacheTemporals()
 }
 
-//ClearCache is a function that clears the mks cache directory
+// ClearCacheFiles is a function that clears the mks template cache directory
 func ClearCacheFiles() {
-	//TODO: Finish HIM (FATALITY!)
+	utils.DeleteFileOrDirectory(global.TemplateCachePath)
+	utils.MakeDirectory(global.TemplateCachePath, 0755)
 }
 
-//ClearCache is a function that clears the mks cache directory
+// ClearCacheZip is a function that clears the mks zip cache directory
 func ClearCacheZip() {
-	//TODO: Finish HIM (FATALITY!)
+	utils.DeleteFileOrDirectory(global.ZipCachePath)
+	utils.MakeDirectory(global.ZipCachePath, 0755)
 }
 
+// ClearCacheTemporals is a function that clears the mks temporals directory
 func ClearCacheTemporals() {
-	//TODO: Finish HIM (FATALITY!)
+	utils.DeleteFileOrDirectory(global.TemporalsPath)
+	utils.MakeDirectory(global.TemporalsPath, 0755)
 }
