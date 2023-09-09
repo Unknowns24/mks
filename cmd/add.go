@@ -4,11 +4,12 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/unknowns24/mks/config"
 	"github.com/unknowns24/mks/global"
 	"github.com/unknowns24/mks/manager"
-)
+) 
 
-func NewAddCmd() *cobra.Command {
+func AddCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add [feature]",
 		Short: "Add a feature to your application",
@@ -32,7 +33,7 @@ func NewAddCmd() *cobra.Command {
 		SilenceUsage: true, // Suppress printing the usage message
 	}
 
-	cmd.Flags().BoolVarP(&global.Verbose, "verbose", "v", false, "Enable verbose mode")
+	cmd.Flags().BoolVarP(&global.Verbose, config.FLAG_VERBOSE_LONG, config.FLAG_VERBOSE_SHORT, false, "Enable verbose mode")
 
 	return cmd
 }

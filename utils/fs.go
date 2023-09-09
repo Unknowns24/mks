@@ -77,6 +77,16 @@ func DeleteFileOrDirectory(filePath string) error {
 	return os.RemoveAll(filePath)
 }
 
+func CheckZipIntegrity(zipPath string) error {
+	r, err := zip.OpenReader(zipPath)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+
+	return nil
+}
+
 // Unzip file to destination
 func Unzip(src, dest string) error {
 	r, err := zip.OpenReader(src)
@@ -126,7 +136,7 @@ func MakeTemporalDirectory() (string, error) {
 	}
 
 	// create temporal dir path
-	tempDirPath := path.Join(global.ConfigFolderPath, "temp", uuid.String())
+	tempDirPath := path.Join(global.TemporalsPath, uuid.String())
 
 	// create directory
 	err = MakeDirectory(tempDirPath, config.FOLDER_PERMISSION)

@@ -3,7 +3,6 @@ package manager
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -26,7 +25,7 @@ func GetThisModuleName() (string, error) {
 	}
 
 	// Read the content of the go.mod file
-	goModContent, err := ioutil.ReadFile("go.mod")
+	goModContent, err := os.ReadFile("go.mod")
 	if err != nil {
 		return "", fmt.Errorf("error reading the go.mod file: %s", err)
 	}

@@ -9,14 +9,14 @@ import (
 	"github.com/unknowns24/mks/manager"
 )
 
-func NewBuildCmd() *cobra.Command {
+func BuildCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "build [name]",
 		Short: "Create an application with custom features",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serviceName := args[0]
-			features, _ := cmd.Flags().GetStringSlice("features")
+			features, _ := cmd.Flags().GetStringSlice(config.FLAG_FEATURE_LONG)
 
 			// Validate every feature on features string slice
 			for _, feature := range features {
@@ -32,8 +32,8 @@ func NewBuildCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVarP(&global.Verbose, "verbose", "v", false, "Enable verbose mode")
-	cmd.Flags().StringSlice("features", []string{}, "Features required for the application")
+	cmd.Flags().BoolVarP(&global.Verbose, config.FLAG_VERBOSE_LONG, config.FLAG_VERBOSE_SHORT, false, "Enable verbose mode")
+	cmd.Flags().StringSliceP(config.FLAG_FEATURE_LONG, config.FLAG_FEATURE_SHORT, []string{}, "Features required for the application")
 
 	return cmd
 }

@@ -4,3 +4,5 @@ main.exe
 main
 .DS_Store
 ./*/.DS_Store
+./*/Thumbs.db
+Thumbs.db
