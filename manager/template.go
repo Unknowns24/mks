@@ -99,7 +99,6 @@ func checkTemplateFiles(templateRootDir string, useFlag []string) (string, error
 	// get folders in template root dir
 	dirs, err := utils.ListDirectories(templateRootDir)
 	if err != nil {
-		//utils.DeleteFileOrDirectory(tempDirPath) // delete temporary directory
 		return "", fmt.Errorf("failed to detect template(s): %s", err)
 	}
 
@@ -115,14 +114,12 @@ func checkTemplateFiles(templateRootDir string, useFlag []string) (string, error
 		// get template(s) name(s) from zip file root folder (could have only one or multiple folders, the name of this folder(s) is the template name(s). Files are ignored.)
 		dirs, err = utils.ListDirectories(templateRootDir)
 		if err != nil {
-			//utils.DeleteFileOrDirectory(tempDirPath) // delete temporary directory
 			return "", fmt.Errorf("failed to detect template(s): %s", err)
 		}
 	}
 
 	// template must have only one folder on root, if not, return error
 	if len(dirs) < 1 {
-		//utils.DeleteFileOrDirectory(tempDirPath) // delete temporary directory1
 		return "", fmt.Errorf("invalid template structure: %s", "almost one template folder is required on root of template")
 	}
 
@@ -140,7 +137,6 @@ func checkTemplateFiles(templateRootDir string, useFlag []string) (string, error
 		for _, currentTemplaName := range useTemplates {
 			// check if template exists in addons folder
 			if utils.SliceContainsElement(templatesAvailablesToInstall, currentTemplaName) {
-				//utils.DeleteFileOrDirectory(tempDirPath) // delete temporary directory
 				templatesNotAvailablesToInstall = append(templatesNotAvailablesToInstall, currentTemplaName)
 			}
 
@@ -192,7 +188,6 @@ func checkTemplateFiles(templateRootDir string, useFlag []string) (string, error
 
 		// If not has a template file returns error
 		if !haveTemplateFile {
-			//utils.DeleteFileOrDirectory(tempDirPath) // delete temporary directory
 			return "", fmt.Errorf("invalid template structure: %s", "template must have a template file")
 		}
 
@@ -520,19 +515,16 @@ func validateMksModulesFiles(fileToCheck, fileType, templateName string) error {
 	if utils.FileOrDirectoryExists(fileToCheck) {
 		valid, err := utils.CheckSyntaxGoFile(fileToCheck)
 		if err != nil || !valid {
-			//utils.DeleteFileOrDirectory(tempDir) // delete temporary directory
 			return fmt.Errorf("invalid template structure: %s is not a valid go file", fileToCheck)
 		}
 
 		valid, err = utils.CheckPackageNameInFile(fileToCheck, config.SPELL_PACKAGE_MKS_MODULE)
 		if err != nil || !valid {
-			//utils.DeleteFileOrDirectory(tempDir) // delete temporary directory
 			return fmt.Errorf("invalid template structure: %s must have %s package name", fileToCheck, config.SPELL_PACKAGE_MKS_MODULE)
 		}
 
 		valid, err = utils.FunctionExistsInFile(fileToCheck, fileType+templateName)
 		if err != nil || !valid {
-			//utils.DeleteFileOrDirectory(tempDir) // delete temporary directory
 			return fmt.Errorf("invalid template structure: %s must have %s function", fileToCheck, fileType+templateName)
 		}
 	}
