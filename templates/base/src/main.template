@@ -17,5 +17,12 @@ func main() {
 	// Creating waitgroup
 	mks_modules.WaitGroup = new(sync.WaitGroup)
 
+	// Load all mks_modules
+	mks_modules.LoadModules()
+
+	// Wait WaitGroup task finish
 	mks_modules.WaitGroup.Wait()
+
+	// Unload all mks_modules
+	mks_modules.UnloadModules()
 }
