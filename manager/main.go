@@ -186,7 +186,7 @@ func createBaseFiles() error {
 	}
 
 	// Initialice Go modules
-	err = InitGoModules(global.ServiceName, global.BasePath)
+	err = utils.InitGoModules(global.ServiceName, global.BasePath)
 	if err != nil {
 		return err
 	}
@@ -203,7 +203,7 @@ func installBasePackages() error {
 		fmt.Println("[+] Installing base packages..")
 	}
 
-	err := InstallNeededPackages(global.BasePath)
+	err := utils.InstallNeededPackages(global.BasePath)
 	if err != nil {
 		return err
 	}
