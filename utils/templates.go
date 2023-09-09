@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -90,7 +89,7 @@ func ReadFileWithCustomReplace(filePath string, replaces map[string]string) (str
 // Function to extend file content by adding new content at the bottom of the file
 func ExtendFile(filePath, newContent string) error {
 	// Read the current content of the file
-	content, err := ioutil.ReadFile(filePath)
+	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
@@ -126,7 +125,7 @@ func ExtendFile(filePath, newContent string) error {
 	}
 
 	// Write the updated content to the env file
-	err = ioutil.WriteFile(filePath, []byte(finalContent), config.FOLDER_PERMISSION)
+	err = os.WriteFile(filePath, []byte(finalContent), config.FOLDER_PERMISSION)
 	if err != nil {
 		return err
 	}
@@ -144,7 +143,7 @@ func AddGoConfigFromString(newConfig string) error {
 	filePath := filepath.Join(global.BasePath, config.FOLDER_SRC, config.FOLDER_UTILS, config.FILE_GO_CONFIG)
 
 	// Read the current content of the file
-	content, err := ioutil.ReadFile(filePath)
+	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
@@ -168,7 +167,7 @@ func AddGoConfigFromString(newConfig string) error {
 	newContent := fmt.Sprintf("%s\n%s\n%s", strings.Join(lines[:configClosingBraceIndex], "\n"), newConfig, strings.Join(lines[configClosingBraceIndex:], "\n"))
 
 	// Write the updated content to the file
-	err = ioutil.WriteFile(filePath, []byte(newContent), config.FOLDER_PERMISSION)
+	err = os.WriteFile(filePath, []byte(newContent), config.FOLDER_PERMISSION)
 	if err != nil {
 		return err
 	}
@@ -183,7 +182,7 @@ func AddEnvConfigFromString(newConfig string) error {
 	exampleEnvfilePath := filepath.Join(global.BasePath, config.FILE_CONFIG_ENVEXAMPLE)
 
 	// Read the current content of the file
-	content, err := ioutil.ReadFile(envFilePath)
+	content, err := os.ReadFile(envFilePath)
 	if err != nil {
 		return err
 	}
@@ -192,13 +191,13 @@ func AddEnvConfigFromString(newConfig string) error {
 	newContent := fmt.Sprintf("%s\n%s", content, newConfig)
 
 	// Write the updated content to the env file
-	err = ioutil.WriteFile(envFilePath, []byte(newContent), config.FOLDER_PERMISSION)
+	err = os.WriteFile(envFilePath, []byte(newContent), config.FOLDER_PERMISSION)
 	if err != nil {
 		return err
 	}
 
 	// Write the updated content to the example env file
-	err = ioutil.WriteFile(exampleEnvfilePath, []byte(newContent), config.FOLDER_PERMISSION)
+	err = os.WriteFile(exampleEnvfilePath, []byte(newContent), config.FOLDER_PERMISSION)
 	if err != nil {
 		return err
 	}

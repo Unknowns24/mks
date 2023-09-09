@@ -103,6 +103,7 @@ func checkTemplateFiles(templateRootDir string, useFlag []string) (string, error
 		return "", fmt.Errorf("failed to detect template(s): %s", err)
 	}
 
+	// check if templateRootDir has a folder with -main suffix, and only is one  (it occurs when the template is downloaded from github, by the user or by the program)
 	// template must have only one folder on root and this folder has a github branch "-main" suffix, use this as template root dir
 	if len(dirs) == 1 && strings.HasSuffix(dirs[0], config.NETWORK_GITHUB_BRANCH_SUFFIX) {
 		if global.Verbose {
@@ -128,23 +129,9 @@ func checkTemplateFiles(templateRootDir string, useFlag []string) (string, error
 	// get template(s) name(s) from folder(s) name(s) (the folder inside templates root dir, templaresRootDir/<FOLDER_NAME>, FOLDER_NAME is the template name)
 	templatesAvailablesToInstall := dirs
 
-	// check if template name has -main suffix and remove it (it occurs when the template is downloaded from github, by the user or by the program)
-
-	// delete -main suffix from template name
-	//templatesAvailablesToInstall = strings.TrimSuffix(templatesAvailablesToInstall, config.NETWORK_GITHUB_BRANCH_SUFFIX)
-
-	// delete mks- prefix from template name
-	//templatesAvailablesToInstall = strings.TrimPrefix(templatesAvailablesToInstall, config.NETWORK_GITHUB_TEMPLATE_PREFIX)
-
 	if global.Verbose {
 		fmt.Println("[+] Checking if template is installed...")
 	}
-	/*
-		templatesCanBeInstalled, err := utils.ListDirectories(templateRootDir)
-		if err != nil {
-			return err
-		}
-	*/
 
 	templatesNotAvailablesToInstall := []string{}
 	templatesAlreadyInstalled := []string{}
@@ -178,9 +165,6 @@ func checkTemplateFiles(templateRootDir string, useFlag []string) (string, error
 	}
 
 	for _, currentTemplaName := range useTemplates {
-		//templateRootDir
-		//currentTemplaName := path.Join(temporalUnzippedFilesPath, dirs[0])
-
 		templateFiles, err := utils.ListDirectoriesAndFiles(templateRootDir + currentTemplaName)
 		if err != nil {
 			return "", fmt.Errorf("failed to detect files in template %s: %s", currentTemplaName, err)
@@ -267,10 +251,7 @@ func downloadTemplateToCache(template string) error {
 
 	// path for this zip file template
 	temporalZipCachePath := path.Join(global.TemporalsPath, templateAddrHash+config.FILE_EXTENSION_ZIP)
-	/*
-		// path for this template folder
-		templateCachePath := path.Join(global.TemplateCachePath, templateAddrHash)
-	*/
+
 	// Path to a temporal folder where zip content will be drop
 	temporalUnzippedFilesPath := path.Join(global.TemporalsPath, templateAddrHash)
 
@@ -361,7 +342,7 @@ func unzipTemplateLocaldisk(zipLocalDisk string) (string, error) {
 		return "", err
 	}
 
-	// unzip template.zip to template directory inside temporary directory
+	// unzip template zip to temporary directory
 	err = utils.Unzip(zipLocalDisk, temporalUnzippedFilesPath)
 	if err != nil {
 		utils.DeleteFileOrDirectory(temporalUnzippedFilesPath) // delete temporary directory
@@ -418,9 +399,6 @@ func InstallTemplate(template string, useFlag []string) error {
 
 	// path for this template folder
 	templateCachePath := path.Join(global.TemplateCachePath, templateAddrHash)
-
-	// Path to a temporal folder where zip content will be drop
-	//temporalUnzippedFilesPath := path.Join(global.TemporalsPath, templateAddrHash)
 
 	var err error = nil
 
@@ -503,7 +481,7 @@ func InstallTemplate(template string, useFlag []string) error {
 		}
 	}
 
-	// if files not exists in cache, but zip file exists, unzip to cache and install it
+	// if files not exists in cache, but zip file exists, unzip to cache and install it....
 
 	if global.Verbose {
 		fmt.Println("[+] Unzipping template...")

@@ -9,14 +9,13 @@ import (
 
 func ClearCacheCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "clear",
-		Short: "Clear mks cache directory. Use mks clear [" +
+		Use: "clear [" +
 			config.ARG_CLEAR_CACHE_ALL + "|" +
 			config.ARG_CLEAR_CACHE_FILES + "|" +
 			config.ARG_CLEAR_CACHE_ZIP + "|" +
-			config.ARG_CLEAR_CACHE_TEMP + "]" +
-			" to clear specific cache files, by default clear " + config.ARG_CLEAR_CACHE_DEFAULT,
-		Args: cobra.RangeArgs(0, 1),
+			config.ARG_CLEAR_CACHE_TEMP + "]",
+		Short: "Clear mks cache directory. Use to clear specific cache files, by default clear uses " + config.ARG_CLEAR_CACHE_DEFAULT,
+		Args:  cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 && len(args) == 1 {
 				if args[0] == config.ARG_CLEAR_CACHE_FILES {

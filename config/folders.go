@@ -4,13 +4,14 @@ const FOLDER_PERMISSION = 0755
 
 // Mks folders
 const (
-	FOLDER_MKS          = "mks"
-	FOLDER_BASE         = "base"
-	FOLDER_ADDONS       = "addons"
-	FOLDER_OTHERS       = "others"
-	FOLDER_TEMPLATES    = "templates"
-	FOLDER_MKS_MODULES  = "mks_modules"
-	FOLDER_TMP_TEMPLATE = "template"
+	FOLDER_MKS            = "mks"
+	FOLDER_BASE           = "base"
+	FOLDER_ADDONS         = "addons"
+	FOLDER_OTHERS         = "others"
+	FOLDER_TEMPLATES      = "templates"
+	FOLDER_MKS_MODULES    = "mks_modules"
+	FOLDER_ZIP_CACHE      = "zip-cache"
+	FOLDER_TEMPLATE_CACHE = "template-cache"
 )
 
 // Shared folders

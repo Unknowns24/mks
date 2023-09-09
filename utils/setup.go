@@ -74,10 +74,10 @@ func SetCacheFoldersPath() error {
 	}
 
 	// Set cache path for zip files
-	global.ZipCachePath = path.Join(global.ConfigFolderPath, "zip-cache")
+	global.ZipCachePath = path.Join(global.ConfigFolderPath, config.FOLDER_ZIP_CACHE)
 
 	// Set cache path for templates
-	global.TemplateCachePath = path.Join(global.ConfigFolderPath, "template-cache")
+	global.TemplateCachePath = path.Join(global.ConfigFolderPath, config.FOLDER_TEMPLATE_CACHE)
 
 	return nil
 }
