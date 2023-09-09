@@ -19,9 +19,11 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.AddCommand(NewBuildCmd())
-	rootCmd.AddCommand(NewAddCmd())
-	rootCmd.AddCommand(NewInstallCmd())
+	rootCmd.AddCommand(BuildCmd())
+	rootCmd.AddCommand(AddCmd())
+	rootCmd.AddCommand(InstallCmd())
 	rootCmd.AddCommand(UninstallCmd())
 	rootCmd.AddCommand(ListCmd())
+	rootCmd.AddCommand(ClearCacheCmd())
+	rootCmd.AddCommand(InfoCmd())
 }
