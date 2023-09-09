@@ -25,6 +25,17 @@ type StringLenghtOptions struct {
 const minStringLenght = 0
 const maxStringLenght = 65536
 
+func ParseCaseSensitiveIntValue(value int) CaseType {
+	switch value {
+	case 0:
+		return Mayus
+	case 1:
+		return Minus
+	default:
+		return None
+	}
+}
+
 func Alphabet(caseSensitive CaseType, opt ...StringLenghtOptions) survey.Validator {
 	return func(val interface{}) error {
 		str, ok := val.(string)
