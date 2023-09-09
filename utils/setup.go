@@ -63,3 +63,36 @@ func SetCurrentInstalledTemplates() error {
 	global.UserTemplatesFolderPath = userTemplatesPath
 	return nil
 }
+
+func SetCacheFoldersPath() error {
+
+	if global.ConfigFolderPath == "" {
+		err := SetUserConfigFolderPath()
+		if err != nil {
+			return err
+		}
+	}
+
+	// Set cache path for zip files
+	global.ZipCachePath = path.Join(global.ConfigFolderPath, "zip-cache")
+
+	// Set cache path for templates
+	global.TemplateCachePath = path.Join(global.ConfigFolderPath, "template-cache")
+
+	return nil
+}
+
+func SetTemporalsPath() error {
+
+	if global.ConfigFolderPath == "" {
+		err := SetUserConfigFolderPath()
+		if err != nil {
+			return err
+		}
+	}
+
+	// Set temp path for temporals files
+	global.TemporalsPath = path.Join(global.ConfigFolderPath, "temp")
+
+	return nil
+}
