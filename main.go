@@ -25,6 +25,16 @@ func main() {
 		panic(err)
 	}
 
+	err = utils.SetCacheFoldersPath()
+	if err != nil {
+		panic(err)
+	}
+
+	err = utils.SetTemporalsPath()
+	if err != nil {
+		panic(err)
+	}
+
 	/******************
 	* EXECUTING COBRA *
 	*******************/
