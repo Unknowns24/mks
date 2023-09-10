@@ -19,10 +19,18 @@ type dependsFileFormat struct {
 func ListTemplate() {
 	fmt.Println("[+] List of templates installed and availables to use:")
 	if len(global.InstalledTemplates) == 0 {
-		fmt.Println("    No templates installed")
+		fmt.Println(" └──── No templates installed")
 		return
 	}
-	fmt.Println(strings.Join(global.InstalledTemplates, "\n"))
+
+	for k, currentTemplaName := range global.InstalledTemplates {
+		if k == len(global.InstalledTemplates)-1 {
+			fmt.Println(" └──── " + currentTemplaName)
+		} else {
+			fmt.Println(" ├──── " + currentTemplaName)
+		}
+	}
+
 }
 
 func UninstallTemplate(template string) error {
@@ -80,7 +88,7 @@ func installTemplateFiles(templateRootDir string, useFlag []string) error {
 		}
 
 		if global.Verbose {
-			fmt.Printf("[+] Template %s installed succesfully.", currentTemplaName)
+			fmt.Printf("[+] Template %s installed succesfully.\n", currentTemplaName)
 		}
 	}
 
@@ -126,22 +134,39 @@ func checkTemplateFiles(templateRootDir string, useFlag []string) (string, error
 	// get template(s) name(s) from folder(s) name(s) (the folder inside templates root dir, templaresRootDir/<FOLDER_NAME>, FOLDER_NAME is the template name)
 	templatesAvailablesToInstall := dirs
 
+	templatesAlreadyInstalled := []string{}
+
+	// add to templatesAlreadyInstalled templates that are already installed
+	// check if templatesAvailablesToInstall has andy element wich contains '-' symbol, if true, return error
+	for _, currentTemplaName := range templatesAvailablesToInstall {
+
+		if utils.SliceContainsElement(global.InstalledTemplates, currentTemplaName) {
+			templatesAlreadyInstalled = append(templatesAlreadyInstalled, currentTemplaName)
+		}
+
+		if strings.Contains(currentTemplaName, "-") {
+			return "", fmt.Errorf("invalid template structure: %s template name must not contain '-' symbol, use '_' instead", currentTemplaName)
+		}
+	}
+
+	if len(templatesAlreadyInstalled) > 1 {
+		return "", fmt.Errorf("some templates are already installed: %s", strings.Join(templatesAlreadyInstalled, ", "))
+	} else if len(templatesAlreadyInstalled) == 1 {
+		return "", fmt.Errorf("template already installed: %s", templatesAlreadyInstalled[0])
+	}
+
 	if global.Verbose {
 		fmt.Println("[+] Checking if template is installed...")
 	}
 
 	templatesNotAvailablesToInstall := []string{}
-	templatesAlreadyInstalled := []string{}
 
 	if len(useTemplates) > 0 {
 		for _, currentTemplaName := range useTemplates {
+
 			// check if template exists in addons folder
 			if utils.SliceContainsElement(templatesAvailablesToInstall, currentTemplaName) {
 				templatesNotAvailablesToInstall = append(templatesNotAvailablesToInstall, currentTemplaName)
-			}
-
-			if utils.SliceContainsElement(global.InstalledTemplates, currentTemplaName) {
-				templatesAlreadyInstalled = append(templatesAlreadyInstalled, currentTemplaName)
 			}
 		}
 	} else {
@@ -154,14 +179,8 @@ func checkTemplateFiles(templateRootDir string, useFlag []string) (string, error
 		return "", fmt.Errorf("template is no available to install: %s", templatesNotAvailablesToInstall[0])
 	}
 
-	if len(templatesAlreadyInstalled) > 1 {
-		return "", fmt.Errorf("some templates are already installed (uninstall them first or use flag --use=\"template1,template2,templateN\" to install only specified templates): %s", strings.Join(templatesAlreadyInstalled, ", "))
-	} else if len(templatesAlreadyInstalled) == 1 {
-		return "", fmt.Errorf("template already installed (uninstall them first or use flag --use=\"template1,template2,templateN\" to install only specified templates): %s", templatesAlreadyInstalled[0])
-	}
-
 	for _, currentTemplaName := range useTemplates {
-		templateFiles, err := utils.ListDirectoriesAndFiles(templateRootDir + currentTemplaName)
+		templateFiles, err := utils.ListDirectoriesAndFiles(path.Join(templateRootDir, currentTemplaName))
 		if err != nil {
 			return "", fmt.Errorf("failed to detect files in template %s: %s", currentTemplaName, err)
 		}
@@ -175,10 +194,9 @@ func checkTemplateFiles(templateRootDir string, useFlag []string) (string, error
 		// Iterate every file on unzipped template folder to search a template file
 		for _, templateFile := range templateFiles {
 			if strings.HasSuffix(templateFile, config.FILE_EXTENSION_TEMPLATE) {
-				valid, err := utils.CheckSyntaxGoFile(path.Join(templateRootDir+currentTemplaName, templateFile))
+				valid, err := utils.CheckSyntaxGoFile(path.Join(templateRootDir, currentTemplaName, templateFile))
 
 				if !valid || err != nil {
-					//					utils.DeleteFileOrDirectory(tempDirPath) // delete temporary directory
 					return "", fmt.Errorf("invalid template structure: %s", "template file must be a valid go file")
 				}
 
@@ -192,7 +210,7 @@ func checkTemplateFiles(templateRootDir string, useFlag []string) (string, error
 		}
 
 		// Validate that this.load file (if exists) pass code validations
-		fileToCheck := path.Join(templateRootDir+currentTemplaName, config.FILE_ADDON_TEMPLATE_MAIN_LOAD)
+		fileToCheck := path.Join(templateRootDir, currentTemplaName, config.FILE_ADDON_TEMPLATE_MAIN_LOAD)
 
 		err = validateMksModulesFiles(fileToCheck, config.SPELL_FUNCION_LOAD_PREFIX, currentTemplaName)
 		if err != nil {
@@ -200,7 +218,7 @@ func checkTemplateFiles(templateRootDir string, useFlag []string) (string, error
 		}
 
 		// Validate that this.unload file (if exists) pass code validations
-		fileToCheck = path.Join(templateRootDir+currentTemplaName, config.FILE_ADDON_TEMPLATE_MAIN_UNLOAD)
+		fileToCheck = path.Join(templateRootDir, currentTemplaName, config.FILE_ADDON_TEMPLATE_MAIN_UNLOAD)
 
 		err = validateMksModulesFiles(fileToCheck, config.SPELL_FUNCION_UNLOAD_PREFIX, currentTemplaName)
 		if err != nil {
@@ -208,7 +226,7 @@ func checkTemplateFiles(templateRootDir string, useFlag []string) (string, error
 		}
 
 		// Validate if has a dependency file and in that case if its dependencies are installed on mks
-		dependFile := path.Join(templateRootDir+currentTemplaName, config.FILE_ADDON_TEMPLATE_DEPENDS)
+		dependFile := path.Join(templateRootDir, currentTemplaName, config.FILE_ADDON_TEMPLATE_DEPENDS)
 
 		if utils.FileOrDirectoryExists(dependFile) {
 
@@ -347,41 +365,6 @@ func unzipTemplateLocaldisk(zipLocalDisk string) (string, error) {
 	return temporalUnzippedFilesPath, nil
 }
 
-// List all templates in cache of template
-func listTemplatesInCache(template string) ([]string, error) {
-	//do a md5 of template (template is an address) and check if exists in zip cache folder
-	templateAddrHash := utils.GetMD5Hash(template)
-
-	// path for this template folder
-	templateCachePath := path.Join(global.TemplateCachePath, templateAddrHash)
-
-	return utils.ListDirectoriesAndFiles(templateCachePath)
-}
-
-// Check if all templates in useFlag are in cache of template, if not return error.
-// If all templates in useFlag are present in cache, return a list of all templates in cache
-func checkTemplatesInCache(template string, useFlag []string) ([]string, error) {
-	templatesInCache, err := listTemplatesInCache(template)
-	if err != nil {
-		return []string{}, err
-	}
-
-	templatesNotFountInCache := []string{}
-	for _, requestedTemplate := range useFlag {
-		if !utils.SliceContainsElement(templatesInCache, requestedTemplate) {
-			templatesNotFountInCache = append(templatesNotFountInCache, requestedTemplate)
-		}
-	}
-
-	if len(templatesNotFountInCache) > 1 {
-		return []string{}, fmt.Errorf("templates %s not found in %s", strings.Join(templatesNotFountInCache, ", "), template)
-	} else if len(templatesNotFountInCache) == 1 {
-		return []string{}, fmt.Errorf("template %s not found in %s", templatesNotFountInCache, template)
-	}
-
-	return templatesInCache, nil
-}
-
 func InstallTemplate(template string, useFlag []string) error {
 
 	fmt.Println("[+] Installing " + template + " template...")
@@ -400,7 +383,7 @@ func InstallTemplate(template string, useFlag []string) error {
 	if utils.FileOrDirectoryExists(templateCachePath) {
 		if global.Verbose {
 			fmt.Println("[+] Template already downloaded, using cached files...")
-			fmt.Println("        if you want a fresh download, delete the cache using 'mks clear'")
+			fmt.Println(" └──── if you want a fresh download, delete the cache using 'mks clear'")
 
 			fmt.Println("[+] Installing template...")
 		}
@@ -472,7 +455,7 @@ func InstallTemplate(template string, useFlag []string) error {
 	} else {
 		if global.Verbose {
 			fmt.Println("[+] Template already downloaded, using cached zip file...")
-			fmt.Println("        if you want a fresh download, delete the zip cache using 'mks clear'")
+			fmt.Println(" └──── if you want a fresh download, delete the zip cache using 'mks clear'")
 		}
 	}
 
@@ -528,6 +511,5 @@ func validateMksModulesFiles(fileToCheck, fileType, templateName string) error {
 			return fmt.Errorf("invalid template structure: %s must have %s function", fileToCheck, fileType+templateName)
 		}
 	}
-
 	return nil
 }
