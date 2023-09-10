@@ -96,6 +96,21 @@ func AddFeature(feature string) error {
 
 func InstallFeature(templatePath string) error {
 	if global.Verbose {
+		fmt.Printf("[+] Checking if %s's template is already installed..\n", templatePath)
+	}
+
+	// Get all installed features inside the application
+	installedFeatures, err := GetApplicationInstalledFeatures()
+	if err != nil {
+		return err
+	}
+
+	// Check if requested feature is already installed
+	if utils.SliceContainsElement(installedFeatures, templatePath) {
+		return fmt.Errorf("%s's template is already installed", templatePath)
+	}
+
+	if global.Verbose {
 		fmt.Printf("[+] Validating %s's template to install..\n", templatePath)
 	}
 
@@ -131,7 +146,6 @@ func InstallFeature(templatePath string) error {
 		if err != nil {
 			return err
 		}
-
 	}
 
 	if len(dependenciesInOrder) > 0 {
