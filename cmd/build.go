@@ -20,6 +20,11 @@ func BuildCmd() *cobra.Command {
 
 			// Validate every feature on features string slice
 			for _, feature := range features {
+				// prevent all features invalid error
+				if feature == config.ALL_FEATURES {
+					continue
+				}
+
 				validFeature := manager.IsValidFeature(feature)
 
 				if !validFeature {
