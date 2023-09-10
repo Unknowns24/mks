@@ -18,18 +18,6 @@ type InstalledFeaturesFileFormat struct {
 	Features []string `json:"features"`
 }
 
-type Prompt struct {
-	Type        string `json:"type"`
-	Prompt      string `json:"prompt"`
-	Default     string `json:"default"`
-	Validate    string `json:"validate"`
-	Placeholder string `json:"placeholder"`
-}
-
-type PromptsFileFormat struct {
-	Prompts []Prompt `json:"prompts"`
-}
-
 func GetApplicationInstalledFeatures() ([]string, error) {
 	// Read file content
 	fileContent, err := utils.ReadFile(path.Join(global.BasePath, config.FOLDER_MKS_MODULES, config.FILE_MKS_INSTALLED_FEATURES))
@@ -79,7 +67,7 @@ func AddFeature(feature string) error {
 	// TODO: replace -> global.ServiceName to global.ApplicationName
 	if global.ServiceName == "" {
 		// Get Mircoservice module name
-		global.ServiceName, err = GetThisModuleName()
+		global.ServiceName, err = utils.GetThisModuleName()
 		if err != nil {
 			return err
 		}
@@ -119,6 +107,8 @@ func InstallFeature(templatePath string) error {
 		fmt.Println("[+] Checking if template has dependency file..")
 	}
 
+	var dependenciesInOrder []string
+
 	// Validate if exists a depends file
 	if utils.FileOrDirectoryExists(dependsFilePath) {
 		allDependenciesInstalled, missingDependencies, err := utils.ValidateAllDependenciesInstalled(dependsFilePath)
@@ -138,35 +128,78 @@ func InstallFeature(templatePath string) error {
 			fmt.Println("[+] Parsing dependency file..")
 		}
 
-		dependenciesInOrder, err := utils.GetDependenciesInstallationOrder(dependsFilePath)
+		dependenciesInOrder, err = utils.GetDependenciesInstallationOrder(dependsFilePath)
 		if err != nil {
 			return err
 		}
 
-		if len(dependenciesInOrder) > 0 {
-			continueInstallation, err := utils.AskConfirm(fmt.Sprintf("%s has this dependencies: %s. Do you want to install it?", templateName, strings.Join(dependenciesInOrder, ", ")))
-			if err != nil {
-				return err
-			}
+	}
 
-			if !continueInstallation {
-				return errors.New("installation interrumped by user")
-			}
+	if len(dependenciesInOrder) > 0 {
+		continueInstallation, err := utils.AskConfirm(fmt.Sprintf("%s has this dependencies: %s. Do you want to install it?", templateName, strings.Join(dependenciesInOrder, ", ")))
+		if err != nil {
+			return err
 		}
 
-		for _, dependencyTemplateName := range dependenciesInOrder {
-			if global.Verbose {
-				fmt.Printf("[+] Validating %s dependency template..\n", dependencyTemplateName)
-			}
-
-			err = ImportFeatureToApp(path.Join(global.UserTemplatesFolderPath, dependencyTemplateName))
-			if err != nil {
-				return fmt.Errorf(`error on %s's "%s" dependency installation: %s"`, templateName, dependencyTemplateName, err)
-			}
+		if !continueInstallation {
+			return errors.New("installation interrumped by user")
 		}
 	}
 
-	err := ImportFeatureToApp(templatePath)
+	if global.Verbose {
+		fmt.Println("[+] Creating a temporal folder to work..")
+	}
+
+	// Create temporal directory to prevent make a mess on the current application
+	temporalDirectoryPath, err := utils.MakeTemporalDirectory()
+	if err != nil {
+		return err
+	}
+
+	if global.Verbose {
+		fmt.Println("[+] Copying the application to the temporal folder..")
+	}
+
+	// Copy application on the temporal directory
+	AppFolderContent, err := utils.ListDirectoriesAndFiles(global.BasePath)
+	if err != nil {
+		utils.DeleteFileOrDirectory(temporalDirectoryPath)
+		return err
+	}
+
+	for _, fileOrDirectory := range AppFolderContent {
+		err := utils.CopyFileOrDirectory(path.Join(global.BasePath, fileOrDirectory), path.Join(temporalDirectoryPath, fileOrDirectory))
+		if err != nil {
+			utils.DeleteFileOrDirectory(temporalDirectoryPath)
+			return err
+		}
+	}
+
+	// 	Check if mks_modules app is already created on the application (if not exists create it)
+	mksModulesFolderPath := path.Join(temporalDirectoryPath, config.FOLDER_MKS_MODULES)
+	if !utils.FileOrDirectoryExists(mksModulesFolderPath) {
+		if global.Verbose {
+			fmt.Println("[+] Copying mks_modules to the application..")
+		}
+
+		err := utils.CopyFileOrDirectory(path.Join(global.MksTemplatesFolderPath, config.FOLDER_MKS_MODULES), mksModulesFolderPath)
+		if err != nil {
+			return err
+		}
+	}
+
+	if global.Verbose {
+		fmt.Printf("[+] Preparing to install %s dependencies template..\n", templateName)
+	}
+
+	for _, dependencyTemplateName := range dependenciesInOrder {
+		err := ImportFeatureToApp(path.Join(global.UserTemplatesFolderPath, dependencyTemplateName), temporalDirectoryPath)
+		if err != nil {
+			return fmt.Errorf(`error on %s's "%s" dependency installation: %s"`, templateName, dependencyTemplateName, err)
+		}
+	}
+
+	err = ImportFeatureToApp(templatePath, temporalDirectoryPath)
 	if err != nil {
 		return fmt.Errorf(`error on %s installation: %s"`, templateName, err)
 	}
@@ -174,7 +207,7 @@ func InstallFeature(templatePath string) error {
 	return nil
 }
 
-func ImportFeatureToApp(templatePath string) error {
+func ImportFeatureToApp(templatePath, workingDirectory string) error {
 	templateName := filepath.Base(templatePath)
 
 	appInstalledFeatures, err := GetApplicationInstalledFeatures()
@@ -202,13 +235,15 @@ func ImportFeatureToApp(templatePath string) error {
 
 	templatePromptsFile := path.Join(templatePath, config.FILE_ADDON_TEMPLATE_PROMPTS)
 
+	placeHoldersToReplace := map[string]string{
+		config.PLACEHOLDER_APP_NAME: global.ServiceName,
+	}
+
 	if utils.FileOrDirectoryExists(templatePromptsFile) {
-		placeHoldersToReplace, err := ParsePromptFile(templatePromptsFile)
+		err := utils.ParsePromptFile(templatePromptsFile, &placeHoldersToReplace)
 		if err != nil {
 			return fmt.Errorf(`error parsing %s: %s"`, templatePromptsFile, err)
 		}
-
-		fmt.Println(placeHoldersToReplace)
 	}
 
 	return nil
