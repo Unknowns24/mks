@@ -57,7 +57,7 @@ func getRealPromptValidationParamType(paramValue string) interface{} {
 	return paramValue
 }
 
-func ParsePromptFile(promptFilePath string) (map[string]string, error) {
+func ParsePromptFile(promptFilePath string, placeholdersToReplace *map[string]string) error {
 	if global.Verbose {
 		fmt.Printf("[+] Parsing %s prompt file..\n", promptFilePath)
 	}
@@ -65,7 +65,7 @@ func ParsePromptFile(promptFilePath string) (map[string]string, error) {
 	// Read file content
 	fileContent, err := ReadFile(promptFilePath)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Variable to save parsed json data
@@ -74,25 +74,28 @@ func ParsePromptFile(promptFilePath string) (map[string]string, error) {
 	// Parse json file and save data on parsedFile variable
 	err = json.Unmarshal([]byte(fileContent), &parsedFile)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	placeHolderToReplace := map[string]string{}
 
 	// if prompt file is not empty
 	if len(parsedFile.Prompts) > 0 {
 		for _, prompt := range parsedFile.Prompts {
 			// Make prompt with the specified validation
 
+			// Skip appname placeholder if exists, this placeholder is managed by MKS
+			if prompt.Placeholder == config.PLACEHOLDER_APP_NAME {
+				continue
+			}
+
 			// Prompt -> no validation
 			if prompt.Validate == config.VALIDATION_NONE {
 				placeHolderValue, err := AskData(prompt.Prompt)
 				if err != nil {
-					return nil, err
+					return err
 				}
 
 				// Save asked value on the map
-				placeHolderToReplace[prompt.Placeholder] = placeHolderValue
+				(*placeholdersToReplace)[prompt.Placeholder] = placeHolderValue
 				continue
 			}
 
@@ -100,11 +103,11 @@ func ParsePromptFile(promptFilePath string) (map[string]string, error) {
 			if strings.HasPrefix(prompt.Validate, config.VALIDATION_NUMBER) {
 				placeHolderValue, err := AskDataWithValidation(prompt.Prompt, validators.Number)
 				if err != nil {
-					return nil, err
+					return err
 				}
 
 				// Save asked value on the map
-				placeHolderToReplace[prompt.Placeholder] = placeHolderValue
+				(*placeholdersToReplace)[prompt.Placeholder] = placeHolderValue
 				continue
 			}
 
@@ -113,7 +116,7 @@ func ParsePromptFile(promptFilePath string) (map[string]string, error) {
 				validationParams := extractPromptValidationParamsValues(prompt.Validate)
 
 				if len(validationParams) != 2 {
-					return nil, fmt.Errorf("the prompt structure of the %s placeholder has an incorrect validation parameters number", prompt.Placeholder)
+					return fmt.Errorf("the prompt structure of the %s placeholder has an incorrect validation parameters number", prompt.Placeholder)
 				}
 
 				// Get real parameters value type
@@ -122,12 +125,12 @@ func ParsePromptFile(promptFilePath string) (map[string]string, error) {
 
 				// Check that all parametersValues are integers
 				if reflect.TypeOf(minValue).Kind() != reflect.Int || reflect.TypeOf(maxValue).Kind() != reflect.Int {
-					return nil, fmt.Errorf("the prompt structure of the %s placeholder has an incorrect validation parameters type expected %s: %s received for minValue | expected %s: %s received for maxValue", prompt.Placeholder, reflect.TypeOf(minValue).Kind(), reflect.Int, reflect.TypeOf(maxValue).Kind(), reflect.Int)
+					return fmt.Errorf("the prompt structure of the %s placeholder has an incorrect validation parameters type expected %s: %s received for minValue | expected %s: %s received for maxValue", prompt.Placeholder, reflect.TypeOf(minValue).Kind(), reflect.Int, reflect.TypeOf(maxValue).Kind(), reflect.Int)
 				}
 
 				// Check min max valid range
 				if minValue.(int) <= maxValue.(int) {
-					return nil, fmt.Errorf("the prompt structure of the %s placeholder has an incorrect validation parameters value, minValue could not be higher than maxValue", prompt.Placeholder)
+					return fmt.Errorf("the prompt structure of the %s placeholder has an incorrect validation parameters value, minValue could not be higher than maxValue", prompt.Placeholder)
 				}
 
 				validatorOptions := validators.NumberRangeOptions{
@@ -137,11 +140,11 @@ func ParsePromptFile(promptFilePath string) (map[string]string, error) {
 
 				placeHolderValue, err := AskDataWithValidation(prompt.Prompt, validators.NumberRange(validatorOptions))
 				if err != nil {
-					return nil, err
+					return err
 				}
 
 				// Save asked value on the map
-				placeHolderToReplace[prompt.Placeholder] = placeHolderValue
+				(*placeholdersToReplace)[prompt.Placeholder] = placeHolderValue
 				continue
 			}
 
@@ -150,7 +153,7 @@ func ParsePromptFile(promptFilePath string) (map[string]string, error) {
 				validationParams := extractPromptValidationParamsValues(prompt.Validate)
 
 				if len(validationParams) != 3 {
-					return nil, fmt.Errorf("the prompt structure of the %s placeholder has an incorrect validation parameters number", prompt.Placeholder)
+					return fmt.Errorf("the prompt structure of the %s placeholder has an incorrect validation parameters number", prompt.Placeholder)
 				}
 
 				// Get real parameters value type
@@ -160,17 +163,17 @@ func ParsePromptFile(promptFilePath string) (map[string]string, error) {
 
 				// Check that all parametersValues are integers
 				if reflect.TypeOf(caseSensitiveValue).Kind() != reflect.Int || reflect.TypeOf(minValue).Kind() != reflect.Int || reflect.TypeOf(maxValue).Kind() != reflect.Int {
-					return nil, fmt.Errorf("the prompt structure of the %s placeholder has an incorrect validation parameters type expected %s: %s received for caseSensitive | expected %s: %s received for minValue | expected %s: %s received for maxValue", prompt.Placeholder, reflect.TypeOf(caseSensitiveValue).Kind(), reflect.Int, reflect.TypeOf(minValue).Kind(), reflect.Int, reflect.TypeOf(maxValue).Kind(), reflect.Int)
+					return fmt.Errorf("the prompt structure of the %s placeholder has an incorrect validation parameters type expected %s: %s received for caseSensitive | expected %s: %s received for minValue | expected %s: %s received for maxValue", prompt.Placeholder, reflect.TypeOf(caseSensitiveValue).Kind(), reflect.Int, reflect.TypeOf(minValue).Kind(), reflect.Int, reflect.TypeOf(maxValue).Kind(), reflect.Int)
 				}
 
 				// Check caseSensitive valid range
 				if caseSensitiveValue.(int) < 0 || caseSensitiveValue.(int) > 2 {
-					return nil, fmt.Errorf("the prompt structure of the %s placeholder has an incorrect validation parameters value, caseSensitive only could be between 0 to 2", prompt.Placeholder)
+					return fmt.Errorf("the prompt structure of the %s placeholder has an incorrect validation parameters value, caseSensitive only could be between 0 to 2", prompt.Placeholder)
 				}
 
 				// Check min max valid range
 				if minValue.(int) <= maxValue.(int) {
-					return nil, fmt.Errorf("the prompt structure of the %s placeholder has an incorrect validation parameters value, minValue could not be higher than maxValue", prompt.Placeholder)
+					return fmt.Errorf("the prompt structure of the %s placeholder has an incorrect validation parameters value, minValue could not be higher than maxValue", prompt.Placeholder)
 				}
 
 				caseSensitiveType := validators.ParseCaseSensitiveIntValue(caseSensitiveValue.(int))
@@ -181,15 +184,15 @@ func ParsePromptFile(promptFilePath string) (map[string]string, error) {
 
 				placeHolderValue, err := AskDataWithValidation(prompt.Prompt, validators.Alphabet(caseSensitiveType, stringLenghtOpts))
 				if err != nil {
-					return nil, err
+					return err
 				}
 
 				// Save asked value on the map
-				placeHolderToReplace[prompt.Placeholder] = placeHolderValue
+				(*placeholdersToReplace)[prompt.Placeholder] = placeHolderValue
 				continue
 			}
 		}
 	}
 
-	return placeHolderToReplace, nil
+	return nil
 }
