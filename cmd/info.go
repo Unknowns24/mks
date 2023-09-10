@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/unknowns24/mks/config"
 	"github.com/unknowns24/mks/global"
 	"github.com/unknowns24/mks/manager"
 )
@@ -16,10 +17,10 @@ func InfoCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			//Show program information to user
 			fmt.Println("[+] MKS - Golang application manager CLI")
-			fmt.Println(" ├──── Version: ", global.MKS_Info_Version)
-			fmt.Println(" ├──── Authors: ", global.MKS_Info_Author)
-			fmt.Println(" ├──── License: ", global.MKS_Info_License)
-			fmt.Println(" └──── Repository: ", global.MKS_Info_Repository)
+			fmt.Println(" ├──── Version: ", config.MKS_Info_Version)
+			fmt.Println(" ├──── Authors: ", config.MKS_Info_Author)
+			fmt.Println(" ├──── License: ", config.MKS_Info_License)
+			fmt.Println(" └──── Repository: ", config.MKS_Info_Repository)
 			fmt.Println("")
 			fmt.Println("[+] Routes:")
 			fmt.Println(" └─┬── User data directory: ", global.ConfigFolderPath)
