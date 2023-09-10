@@ -18,6 +18,6 @@ var (
 
 // Application global variables
 var (
-	BasePath    = "" // Current application inside path
-	ServiceName = "" // Current application module name
+	BasePath        = "" // Current application inside path
+	ApplicationName = "" // Current application module name
 )

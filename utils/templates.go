@@ -25,8 +25,8 @@ func CreateFileFromTemplate(templatePath, finalPath string) error {
 		return err
 	}
 
-	// Replace placeholders with the actual service name
-	fileContent := strings.ReplaceAll(string(templateContent), config.PLACEHOLDER_PACKAGENAME, global.ServiceName)
+	// Replace placeholders with the actual application name
+	fileContent := strings.ReplaceAll(string(templateContent), config.PLACEHOLDER_PACKAGENAME, global.ApplicationName)
 
 	// Write the file content in the file
 	if err := os.WriteFile(finalPath, []byte(fileContent), os.ModePerm); err != nil {

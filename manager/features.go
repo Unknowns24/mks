@@ -63,11 +63,10 @@ func AddAllFeatures() error {
 func AddFeature(feature string) error {
 	var err error
 
-	// If global variable serviceName is empty fill it
-	// TODO: replace -> global.ServiceName to global.ApplicationName
-	if global.ServiceName == "" {
-		// Get Mircoservice module name
-		global.ServiceName, err = utils.GetThisModuleName()
+	// If global variable ApplicationName is empty fill it
+	if global.ApplicationName == "" {
+		// Get Application module name
+		global.ApplicationName, err = utils.GetThisModuleName()
 		if err != nil {
 			return err
 		}
@@ -236,7 +235,7 @@ func ImportFeatureToApp(templatePath, workingDirectory string) error {
 	templatePromptsFile := path.Join(templatePath, config.FILE_ADDON_TEMPLATE_PROMPTS)
 
 	placeHoldersToReplace := map[string]string{
-		config.PLACEHOLDER_APP_NAME: global.ServiceName,
+		config.PLACEHOLDER_APP_NAME: global.ApplicationName,
 	}
 
 	if utils.FileOrDirectoryExists(templatePromptsFile) {
