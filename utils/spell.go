@@ -10,7 +10,9 @@ import (
 	"path/filepath"
 	"regexp"
 
+	"github.com/google/uuid"
 	"github.com/unknowns24/mks/config"
+	"github.com/unknowns24/mks/global"
 )
 
 /* ******************************* */
@@ -33,14 +35,15 @@ func TempFileWithDummyPlaceholder(filePath string) (string, error) {
 	reReplace := regexp.MustCompile("%%([A-Z_]+)%%")
 	modifiedContent := reReplace.ReplaceAll(content, []byte("$1"))
 
-	// Create temporal directory to save temp file
-	tempDir, err := MakeTemporalDirectory()
+	uuid, err := uuid.NewRandom()
 	if err != nil {
 		return "", err
 	}
 
+	newFileName := uuid.String() + "-" + filepath.Base(filePath)
+
 	// Final path of the temp file will be -> tempDir/fileName
-	finalTempFilePath := path.Join(tempDir, filepath.Base(filePath))
+	finalTempFilePath := path.Join(global.TemporalsPath, newFileName)
 
 	// Save the file on the temp folder
 	err = os.WriteFile(finalTempFilePath, modifiedContent, config.FOLDER_PERMISSION)
@@ -60,6 +63,9 @@ func CheckSyntaxGoFile(filePath string) (bool, error) {
 
 	fs := token.NewFileSet()
 	_, err = parser.ParseFile(fs, tempFilePath, nil, parser.AllErrors)
+
+	DeleteFileOrDirectory(tempFilePath)
+
 	return (err == nil), err
 }
 
@@ -75,6 +81,9 @@ func CheckPackageNameInFile(filePath string, expectedPackageName string) (bool, 
 	if err != nil {
 		return false, err
 	}
+
+	DeleteFileOrDirectory(tempFilePath)
+
 	return node.Name.Name == expectedPackageName, nil
 }
 
@@ -98,5 +107,8 @@ func FunctionExistsInFile(filePath string, functionName string) (bool, error) {
 			}
 		}
 	}
+
+	DeleteFileOrDirectory(tempFilePath)
+
 	return false, nil
 }
