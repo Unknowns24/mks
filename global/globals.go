@@ -14,6 +14,7 @@ var (
 	ZipCachePath            = "" // Path to zip cache folder
 	TemplateCachePath       = "" // Path to template cache folder
 	TemporalsPath           = "" // Path to temporals folder
+	ExportPath              = "" // Path to exports folder
 )
 
 // Application global variables

@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/user"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/unknowns24/mks/config"
 	"github.com/unknowns24/mks/global"
@@ -48,7 +50,7 @@ func UninstallTemplate(template string) error {
 	templateFolderPath := path.Join(global.UserTemplatesFolderPath, template)
 
 	if utils.FileOrDirectoryExists(templateFolderPath) {
-		utils.DeleteFileOrDirectory(templateFolderPath) // delete template directory
+		os.RemoveAll(templateFolderPath) // delete template directory
 	}
 
 	if utils.FileOrDirectoryExists(templateFolderPath) {
@@ -58,6 +60,122 @@ func UninstallTemplate(template string) error {
 	if global.Verbose {
 		fmt.Println("[+] Template uninstalled successfully!")
 	}
+
+	return nil
+}
+
+func ExportTemplates(useFlag []string) error {
+	fmt.Println("[+] Exporting template(s)...")
+
+	templatesToExport := []string{}
+
+	if len(useFlag) == 0 {
+		if global.Verbose {
+			fmt.Println("[+] No templates selected, exporting all templates...")
+		}
+		templatesToExport = global.InstalledTemplates
+	} else {
+		templatesToExport = useFlag
+	}
+
+	if global.Verbose {
+		fmt.Println("[+] Checking if template(s) is installed...")
+	}
+
+	// buffer to store templates that are not installed
+	missingTemplates := []string{}
+
+	// mesure the longest template name
+	longestTemplateName := 0
+
+	// calculate the longest template name
+	for _, currentTemplaName := range templatesToExport {
+		if len(currentTemplaName) > longestTemplateName {
+			longestTemplateName = len(currentTemplaName)
+		}
+	}
+
+	tempDir, err := utils.MakeTemporalDirectory()
+	if err != nil {
+		return err
+	}
+
+	outputTempotalTemplates := path.Join(tempDir, config.FOLDER_TEMPLATES)
+
+	for _, currentTemplaName := range templatesToExport {
+
+		templateExists := utils.FileOrDirectoryExists(path.Join(global.UserTemplatesFolderPath, currentTemplaName))
+
+		if global.Verbose {
+			if currentTemplaName == templatesToExport[len(templatesToExport)-1] {
+				fmt.Print(" └──── " + currentTemplaName)
+			} else {
+				fmt.Print(" ├──── " + currentTemplaName)
+			}
+
+			//do a string padding to align all template names
+			spaces := strings.Repeat(" ", longestTemplateName-len(currentTemplaName)+4)
+			if templateExists {
+				fmt.Println(spaces + " (installed)")
+			} else {
+				fmt.Println(spaces + " (not installed)")
+			}
+		}
+
+		if !templateExists {
+			missingTemplates = append(missingTemplates, currentTemplaName)
+		} else {
+			err = utils.CopyFileOrDirectory(path.Join(global.UserTemplatesFolderPath, currentTemplaName), path.Join(outputTempotalTemplates, currentTemplaName))
+			if err != nil {
+				os.RemoveAll(tempDir) // delete temporary directory
+				return fmt.Errorf("failed to copy templates to temporary directory: %s", err)
+			}
+		}
+	}
+
+	if len(missingTemplates) > 0 {
+		os.RemoveAll(tempDir) // delete temporary directory
+		return fmt.Errorf("template(s) not installed: %s", strings.Join(missingTemplates, ", "))
+	}
+
+	// obtain current time
+	currentTime := time.Now()
+
+	username := ""
+
+	// obtain current user data
+	usr, err := user.Current()
+
+	// if no error, use username
+	if err == nil {
+		// get username
+		username = usr.Username
+	}
+
+	// create a filename with username and current time (without extension)
+	fileName := fmt.Sprintf("exported_template_%s_%s", username, currentTime.Format("2006-01-02_15-04-05"))
+
+	// sanitize filename
+	fileName = utils.SanitizeFileName(fileName)
+
+	// zip all templates inside temporary directory
+	err = utils.ZipDirectoryContent(path.Join(tempDir, fileName), outputTempotalTemplates)
+	if err != nil {
+		os.RemoveAll(tempDir) // delete temporary directory
+		return fmt.Errorf("failed to zip templates: %s", err)
+	}
+
+	// move zip file to exports folder
+	os.MkdirAll(global.ExportPath, config.FOLDER_PERMISSION)
+	err = utils.MoveFileOrDirectory(path.Join(tempDir, fileName), path.Join(global.ExportPath, fileName+config.FILE_EXTENSION_ZIP))
+	if err != nil {
+		os.RemoveAll(tempDir) // delete temporary directory
+		return fmt.Errorf("failed to move zip file to current directory: %s", err)
+	}
+
+	os.RemoveAll(tempDir) // delete temporary directory
+	fmt.Println("[+] Template(s) exported successfully!")
+	fmt.Println(" └──── " + path.Join(global.ExportPath, fileName+config.FILE_EXTENSION_ZIP))
 
 	return nil
 }
@@ -273,9 +391,9 @@ func downloadTemplateToCache(template string) error {
 	}
 
 	// make a folder inside temporary directory to unzip the template
-	err = utils.MakeDirectory(temporalUnzippedFilesPath, config.FOLDER_PERMISSION)
+	err = os.MkdirAll(temporalUnzippedFilesPath, config.FOLDER_PERMISSION)
 	if err != nil {
-		utils.DeleteFileOrDirectory(tempDirPath) // delete temporary directory
+		os.RemoveAll(tempDirPath) // delete temporary directory
 		return fmt.Errorf("failed to create temporary directory: %s", err)
 	}
 
@@ -295,23 +413,23 @@ func downloadTemplateToCache(template string) error {
 	// Download template zip file to temporary directory with name template.zip
 	err = utils.DownloadFile(template, temporalZipCachePath)
 	if err != nil {
-		utils.DeleteFileOrDirectory(temporalZipCachePath) // delete downloaded zip file (if exists)
-		utils.DeleteFileOrDirectory(tempDirPath)          // delete temporary directory
+		os.RemoveAll(temporalZipCachePath) // delete downloaded zip file (if exists)
+		os.RemoveAll(tempDirPath)          // delete temporary directory
 		return fmt.Errorf("failed to download template: %s", err)
 	}
 
 	err = utils.CheckZipIntegrity(temporalZipCachePath)
 	if err != nil {
-		utils.DeleteFileOrDirectory(temporalZipCachePath) // delete downloaded zip file (if exists)
-		utils.DeleteFileOrDirectory(tempDirPath)          // delete temporary directory
+		os.RemoveAll(temporalZipCachePath) // delete downloaded zip file (if exists)
+		os.RemoveAll(tempDirPath)          // delete temporary directory
 		return err
 	}
 
 	err = utils.MoveFileOrDirectory(temporalZipCachePath, zipCachePath)
 	if err != nil {
-		utils.DeleteFileOrDirectory(zipCachePath)         // delete downloaded zip file (if exists)
-		utils.DeleteFileOrDirectory(temporalZipCachePath) // delete downloaded zip file (if exists)
-		utils.DeleteFileOrDirectory(tempDirPath)          // delete temporary directory
+		os.RemoveAll(zipCachePath)         // delete downloaded zip file (if exists)
+		os.RemoveAll(temporalZipCachePath) // delete downloaded zip file (if exists)
+		os.RemoveAll(tempDirPath)          // delete temporary directory
 		return fmt.Errorf("failed to move downloaded zip file to cache directory\n %s -> %s", temporalZipCachePath, zipCachePath)
 	}
 
@@ -333,13 +451,13 @@ func unzipTemplateCached(zipCacheName string) error {
 	// unzip template.zip to template directory inside temporary directory
 	err := utils.Unzip(zipCachePath, temporalUnzippedFilesPath)
 	if err != nil {
-		utils.DeleteFileOrDirectory(temporalUnzippedFilesPath) // delete temporary directory
+		os.RemoveAll(temporalUnzippedFilesPath) // delete temporary directory
 		return fmt.Errorf("failed to unzip template: %s", err)
 	}
 
 	err = utils.MoveFileOrDirectory(temporalUnzippedFilesPath, templateCachePath)
 	if err != nil {
-		utils.DeleteFileOrDirectory(temporalUnzippedFilesPath) // delete temporary directory
+		os.RemoveAll(temporalUnzippedFilesPath) // delete temporary directory
 		return fmt.Errorf("failed to move unzipped template: %s", err)
 	}
 
@@ -357,7 +475,7 @@ func unzipTemplateLocaldisk(zipLocalDisk string) (string, error) {
 	// unzip template zip to temporary directory
 	err = utils.Unzip(zipLocalDisk, temporalUnzippedFilesPath)
 	if err != nil {
-		utils.DeleteFileOrDirectory(temporalUnzippedFilesPath) // delete temporary directory
+		os.RemoveAll(temporalUnzippedFilesPath) // delete temporary directory
 		return "", fmt.Errorf("failed to unzip template: %s", err)
 	}
 
@@ -417,14 +535,14 @@ func InstallTemplate(template string, useFlag []string) error {
 			templateLocalDiskPath, err := unzipTemplateLocaldisk(template)
 			if err != nil {
 				// delete temporary directory
-				utils.DeleteFileOrDirectory(templateLocalDiskPath)
+				os.RemoveAll(templateLocalDiskPath)
 				return fmt.Errorf("failed to unzip template: %s", err)
 			}
 
 			// check if template "was unzipped correctly" (directory exists)
 			if !utils.FileOrDirectoryExists(templateLocalDiskPath) {
 				// delete temporary directory
-				utils.DeleteFileOrDirectory(templateLocalDiskPath)
+				os.RemoveAll(templateLocalDiskPath)
 				return fmt.Errorf("failed to unzip template: %s", "template on cache does not exist")
 			}
 
@@ -435,7 +553,7 @@ func InstallTemplate(template string, useFlag []string) error {
 			templateRootDir, err := checkTemplateFiles(templateLocalDiskPath, useFlag)
 			if err != nil {
 				// delete temporary directory
-				utils.DeleteFileOrDirectory(templateLocalDiskPath)
+				os.RemoveAll(templateLocalDiskPath)
 				return err
 			}
 
@@ -447,7 +565,7 @@ func InstallTemplate(template string, useFlag []string) error {
 			retValue := installTemplateFiles(templateRootDir, useFlag)
 
 			// delete temporary directory
-			utils.DeleteFileOrDirectory(templateLocalDiskPath)
+			os.RemoveAll(templateLocalDiskPath)
 
 			return retValue
 		}

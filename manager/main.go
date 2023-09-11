@@ -39,7 +39,7 @@ func GenerateApplication(ApplicationName string, features []string) error {
 
 	// Create base path directory
 	if err := os.MkdirAll(global.BasePath, os.ModePerm); err != nil {
-		utils.DeleteFileOrDirectory(global.BasePath)
+		os.RemoveAll(global.BasePath)
 		return err
 	}
 
@@ -50,7 +50,7 @@ func GenerateApplication(ApplicationName string, features []string) error {
 	// Create all base files
 	err = createBaseFiles()
 	if err != nil {
-		utils.DeleteFileOrDirectory(global.BasePath)
+		os.RemoveAll(global.BasePath)
 		return err
 	}
 

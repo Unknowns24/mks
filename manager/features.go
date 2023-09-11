@@ -107,7 +107,7 @@ func AddFeature(feature string) error {
 	err = installFeature(path.Join(global.UserTemplatesFolderPath, feature))
 	if err != nil {
 		if temporalDirectoryPath != "" {
-			utils.DeleteFileOrDirectory(temporalDirectoryPath)
+			os.RemoveAll(temporalDirectoryPath)
 		}
 
 		return err
@@ -203,7 +203,7 @@ func installFeature(templatePath string) error {
 	// Copy application on the temporal directory
 	err = utils.CopyFileOrDirectory(global.BasePath, applicationTempDir)
 	if err != nil {
-		utils.DeleteFileOrDirectory(temporalDirectoryPath)
+		os.RemoveAll(temporalDirectoryPath)
 		return err
 	}
 

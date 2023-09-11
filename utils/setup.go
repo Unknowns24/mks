@@ -92,7 +92,22 @@ func SetTemporalsPath() error {
 	}
 
 	// Set temp path for temporals files
-	global.TemporalsPath = path.Join(global.ConfigFolderPath, "temp")
+	global.TemporalsPath = path.Join(global.ConfigFolderPath, config.FOLDER_TEMPORALS)
+
+	return nil
+}
+
+func SetExportsPath() error {
+
+	if global.ConfigFolderPath == "" {
+		err := SetUserConfigFolderPath()
+		if err != nil {
+			return err
+		}
+	}
+
+	// Set temp path for temporals files
+	global.TemporalsPath = path.Join(global.ConfigFolderPath, config.FOLDER_EXPORTS)
 
 	return nil
 }

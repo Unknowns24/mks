@@ -2,11 +2,14 @@ package utils
 
 import (
 	"archive/zip"
+	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/google/uuid"
@@ -33,15 +36,6 @@ func FileOrDirectoryExists(filePath string) bool {
 	return true
 }
 
-// Make directory
-func MakeDirectory(dirPath string, perms os.FileMode) error {
-	if !FileOrDirectoryExists(dirPath) {
-		return os.MkdirAll(dirPath, perms)
-	}
-
-	return nil
-}
-
 // move file or directory (with contents) to new location
 func MoveFileOrDirectory(sourcePath string, destPath string) error {
 	if !FileOrDirectoryExists(sourcePath) {
@@ -66,15 +60,6 @@ func CopyFileOrDirectory(sourcePath string, destPath string) error {
 	}
 
 	return errors.New("destination file or directory already exists")
-}
-
-// Delete file or directory (with contents)
-func DeleteFileOrDirectory(filePath string) error {
-	if !FileOrDirectoryExists(filePath) {
-		return errors.New("file or directory does not exist")
-	}
-
-	return os.RemoveAll(filePath)
 }
 
 func CheckZipIntegrity(zipPath string) error {
@@ -127,6 +112,83 @@ func Unzip(src, dest string) error {
 	return nil
 }
 
+func ZipDirectoryContent(outputzipfilepath, directoryPath string) error {
+	buf := new(bytes.Buffer)
+	zw := zip.NewWriter(buf)
+
+	// function to add files and directories to zip file
+	err := filepath.Walk(directoryPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// prevents adding the root directory itself to the zip file
+		if path == directoryPath {
+			return nil
+		}
+
+		// create the structure of directories and files in the zip file
+		relPath, _ := filepath.Rel(directoryPath, path)
+		header, err := zip.FileInfoHeader(info)
+		if err != nil {
+			return err
+		}
+		header.Name = relPath
+
+		if info.IsDir() {
+			header.Name += "/"
+		} else {
+			header.Method = zip.Deflate
+		}
+
+		writer, err := zw.CreateHeader(header)
+		if err != nil {
+			return err
+		}
+
+		if !info.IsDir() {
+			file, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+			_, err = io.Copy(writer, file)
+		}
+		return err
+	})
+
+	if err != nil {
+		return fmt.Errorf("can't add file or directory to zip file: %v", err)
+	}
+
+	if err := zw.Close(); err != nil {
+		return fmt.Errorf("can't close zip file: %v", err)
+	}
+
+	zipFile, err := os.Create(outputzipfilepath)
+	if err != nil {
+		return fmt.Errorf("can't create zip file: %v", err)
+	}
+	defer zipFile.Close()
+
+	_, err = buf.WriteTo(zipFile)
+	if err != nil {
+		return fmt.Errorf("can't write to zip file: %v", err)
+	}
+	return nil
+}
+
+func SanitizeFileName(input string) string {
+	// replace spaces with underscores
+	sanitized := strings.ReplaceAll(input, " ", "_")
+
+	// use a regular expression to remove any character that is not alphanumeric, dash or underscore
+	reg := regexp.MustCompile("[^a-zA-Z0-9-_]+")
+	sanitized = reg.ReplaceAllString(sanitized, "_")
+
+	return sanitized
+}
+
 // Make temporary directory with random name and return path
 func MakeTemporalDirectory() (string, error) {
 	//make uuid using google package
@@ -139,7 +201,7 @@ func MakeTemporalDirectory() (string, error) {
 	tempDirPath := path.Join(global.TemporalsPath, uuid.String())
 
 	// create directory
-	err = MakeDirectory(tempDirPath, config.FOLDER_PERMISSION)
+	err = os.MkdirAll(tempDirPath, config.FOLDER_PERMISSION)
 
 	if err != nil {
 		return "", err

@@ -26,4 +26,5 @@ func init() {
 	rootCmd.AddCommand(ListCmd())
 	rootCmd.AddCommand(ClearCacheCmd())
 	rootCmd.AddCommand(InfoCmd())
+	rootCmd.AddCommand(ExportCmd())
 }
