@@ -160,7 +160,7 @@ func AddGoConfigFromString(newConfig, workDirectory string) error {
 
 	// Find the line that defines the Config structure
 	for i, line := range lines {
-		if strings.Contains(line, "Config") && strings.Contains(line, "struct") {
+		if strings.Contains(line, config.SPELL_STRUCT_CONFIG_NAME) && strings.Contains(line, config.SPELL_STRUCT_PREFIX) {
 			configClosingBraceIndex = findClosingBrace(lines, i)
 			break
 		}
@@ -171,7 +171,7 @@ func AddGoConfigFromString(newConfig, workDirectory string) error {
 	}
 
 	// Insert the new configuration before the closing of the Config structure
-	newContent := fmt.Sprintf("%s\n%s\n%s", strings.Join(lines[:configClosingBraceIndex], "\n"), newConfig, strings.Join(lines[configClosingBraceIndex:], "\n"))
+	newContent := fmt.Sprintf("%s\n\t%s\n%s", strings.Join(lines[:configClosingBraceIndex], "\n"), newConfig, strings.Join(lines[configClosingBraceIndex:], "\n"))
 
 	// Write the updated content to the file
 	err = os.WriteFile(filePath, []byte(newContent), config.FOLDER_PERMISSION)
@@ -336,6 +336,10 @@ func ImportBaseContent(sourcePath, finalPath string) error {
 	return nil
 }
 
+/*************************************
+* PROCESS MKS FILES WITH CUSTOM PATH *
+**************************************/
+
 func ProcessMksCustomFilesPath(fileName string) (MksTemplatePath, error) {
 	var templatePath MksTemplatePath
 
@@ -355,4 +359,43 @@ func ProcessMksCustomFilesPath(fileName string) (MksTemplatePath, error) {
 	templatePath.Folders = parts[:len(parts)-2]
 
 	return templatePath, nil
+}
+
+/******************************
+* ADD CONTENT INSIDE FUNCTION *
+*******************************/
+
+// Function to add a new configuration before the closing of the Config structure in the source file
+func AddContentInsideFunction(filePath, functionName, newContent string) error {
+	// Read the current content of the file
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	lines := strings.Split(string(content), "\n")
+	var configClosingBraceIndex int
+
+	// Find the line that defines the Config structure
+	for i, line := range lines {
+		if strings.Contains(line, config.SPELL_FUNCION_PREFIX) && strings.Contains(line, functionName) {
+			configClosingBraceIndex = findClosingBrace(lines, i)
+			break
+		}
+	}
+
+	if configClosingBraceIndex == -1 {
+		return fmt.Errorf("could not find closing brace for the %s function", functionName)
+	}
+
+	// Insert the new configuration before the closing of the Config structure
+	finalContent := fmt.Sprintf("%s\n%s\n%s", strings.Join(lines[:configClosingBraceIndex], "\n"), newContent, strings.Join(lines[configClosingBraceIndex:], "\n"))
+
+	// Write the updated content to the file
+	err = os.WriteFile(filePath, []byte(finalContent), config.FOLDER_PERMISSION)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
