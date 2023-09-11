@@ -15,10 +15,18 @@ import (
 )
 
 type InstalledFeaturesFileFormat struct {
-	Features []string `json:"features"`
+	Features []Feature `json:"features"`
 }
 
-func GetApplicationInstalledFeatures() ([]string, error) {
+type Feature struct {
+	Feature   string `json:"feature"`
+	HasLoad   bool   `json:"hasLoad"`
+	HasUnload bool   `json:"hasUnload"`
+}
+
+var temporalDirectoryPath string
+
+func getApplicationInstalledFeatures() ([]Feature, error) {
 	// Read file content
 	fileContent, err := utils.ReadFile(path.Join(global.BasePath, config.FOLDER_MKS_MODULES, config.FILE_MKS_INSTALLED_FEATURES))
 	if err != nil {
@@ -37,15 +45,25 @@ func GetApplicationInstalledFeatures() ([]string, error) {
 	return parsedFile.Features, nil
 }
 
+func isFeatureInstalled(installedFeatures []Feature, featureName string) bool {
+	for _, installedFeature := range installedFeatures {
+		if installedFeature.Feature == featureName {
+			return true
+		}
+	}
+
+	return false
+}
+
 func IsValidFeature(feature string) bool {
 	return utils.FileOrDirectoryExists(path.Join(global.UserTemplatesFolderPath, feature))
 }
 
-func FeatureHasLoadFile(feature string) bool {
+func hasFeatureLoadFile(feature string) bool {
 	return utils.FileOrDirectoryExists(path.Join(global.UserTemplatesFolderPath, feature, config.FILE_ADDON_TEMPLATE_MAIN_LOAD))
 }
 
-func FeatureHasUnloadFile(feature string) bool {
+func hasFeatureUnloadFile(feature string) bool {
 	return utils.FileOrDirectoryExists(path.Join(global.UserTemplatesFolderPath, feature, config.FILE_ADDON_TEMPLATE_MAIN_UNLOAD))
 }
 
@@ -86,15 +104,19 @@ func AddFeature(feature string) error {
 		return fmt.Errorf("unknown feature: %s", feature)
 	}
 
-	err = InstallFeature(path.Join(global.UserTemplatesFolderPath, feature))
+	err = installFeature(path.Join(global.UserTemplatesFolderPath, feature))
 	if err != nil {
+		if temporalDirectoryPath != "" {
+			utils.DeleteFileOrDirectory(temporalDirectoryPath)
+		}
+
 		return err
 	}
 
 	return nil
 }
 
-func InstallFeature(templatePath string) error {
+func installFeature(templatePath string) error {
 	templateName := filepath.Base(templatePath)
 
 	if global.Verbose {
@@ -102,14 +124,16 @@ func InstallFeature(templatePath string) error {
 	}
 
 	// Get all installed features inside the application
-	installedFeatures, err := GetApplicationInstalledFeatures()
+	installedFeatures, err := getApplicationInstalledFeatures()
 	if err != nil {
 		return err
 	}
 
 	// Check if requested feature is already installed
-	if utils.SliceContainsElement(installedFeatures, templateName) {
-		return fmt.Errorf("%s's template is already installed", templateName)
+	if isFeatureInstalled(installedFeatures, templateName) {
+		fmt.Printf("%s's template is already installed.\n", templateName)
+		// return nil to prevent errors with addAllFeatures
+		return nil
 	}
 
 	if global.Verbose {
@@ -165,7 +189,7 @@ func InstallFeature(templatePath string) error {
 	}
 
 	// Create temporal directory to prevent make a mess on the current application
-	temporalDirectoryPath, err := utils.MakeTemporalDirectory()
+	temporalDirectoryPath, err = utils.MakeTemporalDirectory()
 	if err != nil {
 		return err
 	}
@@ -196,13 +220,17 @@ func InstallFeature(templatePath string) error {
 
 	// Import all no installed dependencies to the application
 	for _, dependencyTemplateName := range dependenciesInOrder {
-		if !utils.SliceContainsElement(installedFeatures, dependencyTemplateName) {
-			err := ImportFeatureToApp(path.Join(global.UserTemplatesFolderPath, dependencyTemplateName), applicationTempDir)
+		if !isFeatureInstalled(installedFeatures, dependencyTemplateName) {
+			err := importFeatureToApp(path.Join(global.UserTemplatesFolderPath, dependencyTemplateName), applicationTempDir)
 			if err != nil {
 				return fmt.Errorf(`error on %s's "%s" dependency installation: %s"`, templateName, dependencyTemplateName, err)
 			}
 
-			installedFeatures = append(installedFeatures, dependencyTemplateName)
+			installedFeatures = append(installedFeatures, Feature{
+				Feature:   dependencyTemplateName,
+				HasLoad:   hasFeatureLoadFile(dependencyTemplateName),
+				HasUnload: hasFeatureUnloadFile(dependencyTemplateName),
+			})
 		}
 	}
 
@@ -211,13 +239,17 @@ func InstallFeature(templatePath string) error {
 	}
 
 	// Import main feature to the application
-	err = ImportFeatureToApp(templatePath, applicationTempDir)
+	err = importFeatureToApp(templatePath, applicationTempDir)
 	if err != nil {
 		return fmt.Errorf(`error on %s installation: %s"`, templateName, err)
 	}
 
 	// Add main feature to installed features
-	installedFeatures = append(installedFeatures, templateName)
+	installedFeatures = append(installedFeatures, Feature{
+		Feature:   templateName,
+		HasLoad:   hasFeatureLoadFile(templateName),
+		HasUnload: hasFeatureUnloadFile(templateName),
+	})
 
 	if global.Verbose {
 		fmt.Println("[+] Setting up mks module manager..")
@@ -229,8 +261,37 @@ func InstallFeature(templatePath string) error {
 		return err
 	}
 
+	if global.Verbose {
+		fmt.Println("[+] Installing missing golang packages..")
+	}
+
 	// Install all go packages to go.mod
 	err = utils.InstallNeededPackages(applicationTempDir)
+	if err != nil {
+		return err
+	}
+
+	if global.Verbose {
+		fmt.Println("[+] Looking all go files to check syntax errors..")
+	}
+
+	// Check all go files sintax
+	err = utils.CheckAllGoFilesInDirectory(applicationTempDir)
+	if err != nil {
+		return err
+	}
+
+	// Rename user application directory
+	if err := os.Rename(global.BasePath, fmt.Sprintf("%s_bkp", global.BasePath)); err != nil {
+		return err
+	}
+
+	// Copy modified application to BasePath
+	if global.Verbose {
+		fmt.Println("[+] Copying modified application to old application path..")
+	}
+
+	err = utils.CopyFileOrDirectory(applicationTempDir, global.BasePath)
 	if err != nil {
 		return err
 	}
@@ -238,7 +299,7 @@ func InstallFeature(templatePath string) error {
 	return nil
 }
 
-func ImportFeatureToApp(templatePath, workingDirectory string) error {
+func importFeatureToApp(templatePath, workingDirectory string) error {
 	templateName := filepath.Base(templatePath)
 
 	if global.Verbose {
@@ -495,9 +556,100 @@ func ImportFeatureToApp(templatePath, workingDirectory string) error {
 	return nil
 }
 
-func generateModuleManagerFiles(workingDirectory string, installedFeatures []string) error {
-	//TODO: Implement generation of loadModules and unloadModules
-	//TODO: Implement generation of installed_features.json
+func generateModuleManagerFiles(workingDirectory string, installedFeatures []Feature) error {
+	// Update/Create the installed_features.json
+	if global.Verbose {
+		fmt.Println("[+] Updating installed_features.json..")
+	}
+
+	// Set struct data
+	newInstalledFeatures := InstalledFeaturesFileFormat{
+		Features: installedFeatures,
+	}
+
+	// Convert the structure to JSON format
+	jsonData, err := json.Marshal(newInstalledFeatures)
+	if err != nil {
+		return err
+	}
+
+	// Write the data to the file
+	installedFeaturesFilePath := path.Join(workingDirectory, config.FOLDER_MKS_MODULES, config.FILE_MKS_INSTALLED_FEATURES)
+	err = os.WriteFile(installedFeaturesFilePath, jsonData, config.FOLDER_PERMISSION)
+	if err != nil {
+		return err
+	}
+
+	//Update modules_manager.go
+	if global.Verbose {
+		fmt.Println("[+] Updating modules_manager.go..")
+	}
+
+	var loadFunctions []string
+	var unloadFunctions []string
+
+	for _, installedFeature := range installedFeatures {
+		// Check if feature has main.load file
+		if installedFeature.HasLoad {
+			// Add current feature to loadFunctions string slice variable
+			loadFunctions = append(loadFunctions, fmt.Sprintf("%s%s()", config.SPELL_FUNCION_LOAD_PREFIX, installedFeature.Feature))
+
+			// Path to mks_modules/load<feature>.go file
+			finaMainLoadFilePath := path.Join(workingDirectory, config.FOLDER_MKS_MODULES, fmt.Sprintf("%s%s%s", config.SPELL_FUNCION_LOAD_PREFIX, installedFeature.Feature, config.FILE_EXTENSION_GO))
+
+			// Check if load file is already installed inside mks_modules folder
+			if !utils.FileOrDirectoryExists(finaMainLoadFilePath) {
+				// Path of file to copy
+				mainLoadFilePath := path.Join(global.UserTemplatesFolderPath, installedFeature.Feature, config.FILE_ADDON_TEMPLATE_MAIN_LOAD)
+
+				// Copy file to mks_modules folder with the correct name
+				err = utils.CopyFileOrDirectory(mainLoadFilePath, finaMainLoadFilePath)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		// Check if feature has main.unload file
+		if installedFeature.HasUnload {
+			// Add current feature to unloadFunctions string slice variable
+			unloadFunctions = append(unloadFunctions, fmt.Sprintf("%s%s()", config.SPELL_FUNCION_UNLOAD_PREFIX, installedFeature.Feature))
+
+			// Path to mks_modules/unload<feature>.go file
+			finaMainUnloadFilePath := path.Join(workingDirectory, config.FOLDER_MKS_MODULES, fmt.Sprintf("%s%s%s", config.SPELL_FUNCION_UNLOAD_PREFIX, installedFeature.Feature, config.FILE_EXTENSION_GO))
+
+			// Check if unload file is already installed inside mks_modules folder
+			if !utils.FileOrDirectoryExists(finaMainUnloadFilePath) {
+				// Path of file to copy
+				mainUnloadFilePath := path.Join(global.UserTemplatesFolderPath, installedFeature.Feature, config.FILE_ADDON_TEMPLATE_MAIN_UNLOAD)
+
+				// Copy file to mks_modules folder with the correct name
+				err = utils.CopyFileOrDirectory(mainUnloadFilePath, finaMainUnloadFilePath)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	// Path to mks_modules/module_manager.go
+	moduleManagerFilePath := path.Join(workingDirectory, config.FOLDER_MKS_MODULES, config.FILE_MKS_MODULE_MANAGER)
+
+	// Final function contents as strings
+	finalLoadFunctions := fmt.Sprintf("\t%s", strings.Join(loadFunctions, "\n\t"))
+	finalUnloadFunctions := fmt.Sprintf("\t%s", strings.Join(unloadFunctions, "\n\t"))
+
+	// Add content to loadModules function
+	err = utils.AddContentInsideFunction(moduleManagerFilePath, config.SPELL_FUNCION_LOAD_MODULE_MANAGER, finalLoadFunctions)
+	if err != nil {
+		return err
+	}
+
+	// Add content to unloadModules function
+	err = utils.AddContentInsideFunction(moduleManagerFilePath, config.SPELL_FUNCION_UNLOAD_MODULE_MANAGER, finalUnloadFunctions)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
