@@ -7,14 +7,15 @@ var (
 
 // Mks global variables
 var (
-	ConfigFolderPath        = "" // Path to mks config folder inside user config
+	InstalledTemplates      = []string{}
+	ExportPath              = "" // Path to exports folder
+	ZipCachePath            = "" // Path to zip cache folder
+	TemporalsPath           = "" // Path to temporals folder
+	AutoBackupsPath         = "" // path to store auto backups of feature adds
+	TemplateCachePath       = "" // Path to template cache folder
+	MksDataFolderPath       = "" // Path to mks data folder inside user config
 	MksTemplatesFolderPath  = "" // Path to templates folder inside mks
 	UserTemplatesFolderPath = "" // Path to templates folder inside user config
-	InstalledTemplates      = []string{}
-	ZipCachePath            = "" // Path to zip cache folder
-	TemplateCachePath       = "" // Path to template cache folder
-	TemporalsPath           = "" // Path to temporals folder
-	ExportPath              = "" // Path to exports folder
 )
 
 // Application global variables
