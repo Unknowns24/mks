@@ -67,7 +67,7 @@ func UninstallTemplate(template string) error {
 func ExportTemplates(useFlag []string) error {
 	fmt.Println("[+] Exporting template(s)...")
 
-	templatesToExport := []string{}
+	var templatesToExport []string
 
 	if len(useFlag) == 0 {
 		if global.Verbose {
@@ -138,25 +138,15 @@ func ExportTemplates(useFlag []string) error {
 		return fmt.Errorf("template(s) not installed: %s", strings.Join(missingTemplates, ", "))
 	}
 
-	// obtain current time
-	currentTime := time.Now()
-
 	username := ""
 
-	// obtain current user data
-	usr, err := user.Current()
-
-	// if no error, use username
-	if err == nil {
-		// get username
+	// obtain current user data & if no error, use username
+	if usr, err := user.Current(); err == nil {
 		username = usr.Username
 	}
 
-	// create a filename with username and current time (without extension)
-	fileName := fmt.Sprintf("exported_template_%s_%s", username, currentTime.Format("2006-01-02_15-04-05"))
-
-	// sanitize filename
-	fileName = utils.SanitizeFileName(fileName)
+	// create and sanitize filename with username and current time (without extension)
+	fileName := utils.SanitizeFileName(fmt.Sprintf("exported_template_%s_%s", username, time.Now().Format("2006-01-02_15-04-05")))
 
 	// zip all templates inside temporary directory
 	err = utils.ZipDirectoryContent(path.Join(tempDir, fileName), outputTempotalTemplates)

@@ -121,18 +121,20 @@ func CheckAllGoFilesInDirectory(dirPath string) error {
 	}
 
 	for _, element := range filesAndFolders {
-		info, err := os.Stat(element)
+		elementPath := path.Join(dirPath, element)
+
+		info, err := os.Stat(elementPath)
 		if err != nil {
 			return err
 		}
 
 		if info.IsDir() {
-			err = CheckAllGoFilesInDirectory(element)
+			err = CheckAllGoFilesInDirectory(elementPath)
 			if err != nil {
 				return err
 			}
 		} else if filepath.Ext(element) == config.FILE_EXTENSION_GO {
-			valid, err := CheckSyntaxGoFile(element)
+			valid, err := CheckSyntaxGoFile(elementPath)
 			if err != nil {
 				return err
 			}

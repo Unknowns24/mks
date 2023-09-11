@@ -1,13 +1,17 @@
 package utils
 
-import "github.com/AlecAivazis/survey/v2"
+import (
+	"fmt"
+
+	"github.com/AlecAivazis/survey/v2"
+)
 
 func AskConfirm(question string) (bool, error) {
 	var answer bool
 
 	prompt := &survey.Confirm{
 		Message: question,
-		Default: false, // Opcional: Establece el valor predeterminado en false
+		Default: false, // Optional: Set default value to false
 	}
 
 	err := survey.AskOne(prompt, &answer)
@@ -35,7 +39,8 @@ func AskData(question string) (string, error) {
 
 	// Confirmate value
 	confirm := &survey.Confirm{
-		Message: response + ", Is it correct?",
+		Message: fmt.Sprintf("Your answer was \"%s\", Do you want to continue?", response),
+		Default: false, // Optional: Set default value to false
 	}
 
 	// Ask if value is correct
@@ -67,9 +72,9 @@ func AskDataWithValidation(questionTitle string, validator survey.Validator) (st
 
 	// Confirmate value
 	confirm := &survey.Confirm{
-		Message: response + ", Is it correct?",
+		Message: fmt.Sprintf("Your answer was \"%s\", Do you want to continue?", response),
+		Default: false, // Optional: Set default value to false
 	}
-
 	// Ask if value is correct
 	err = survey.AskOne(confirm, &confirmed)
 	if err != nil {

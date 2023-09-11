@@ -23,7 +23,7 @@ func SetMksTemplatesFolderPath() error {
 	return nil
 }
 
-func SetUserConfigFolderPath() error {
+func SetMksDataFolderPath() error {
 	configPath, err := os.UserConfigDir()
 	if err != nil {
 		return fmt.Errorf("error happend on config directory: %s", err)
@@ -38,12 +38,15 @@ func SetUserConfigFolderPath() error {
 		}
 	}
 
-	global.ConfigFolderPath = mksConfigPath
+	global.MksDataFolderPath = mksConfigPath
 	return nil
 }
 
 func SetCurrentInstalledTemplates() error {
-	userTemplatesPath := path.Join(global.ConfigFolderPath, config.FOLDER_TEMPLATES)
+	// As this config uses MksDataFolderPath set it if is not declared
+	setMksDataIfNotExist()
+
+	userTemplatesPath := path.Join(global.MksDataFolderPath, config.FOLDER_TEMPLATES)
 
 	// Create templates folder on mks app data directory if not exist
 	if !FileOrDirectoryExists(userTemplatesPath) {
@@ -64,50 +67,42 @@ func SetCurrentInstalledTemplates() error {
 	return nil
 }
 
-func SetCacheFoldersPath() error {
+func SetMksDataFoldersPath() error {
+	// As this config uses MksDataFolderPath set it if is not declared
+	setMksDataIfNotExist()
 
-	if global.ConfigFolderPath == "" {
-		err := SetUserConfigFolderPath()
-		if err != nil {
-			return err
-		}
-	}
+	// Set path for exported files
+	global.ExportPath = path.Join(global.MksDataFolderPath, config.FOLDER_EXPORTS)
 
 	// Set cache path for zip files
-	global.ZipCachePath = path.Join(global.ConfigFolderPath, config.FOLDER_ZIP_CACHE)
+	global.ZipCachePath = path.Join(global.MksDataFolderPath, config.FOLDER_ZIP_CACHE)
+
+	global.AutoBackupsPath = path.Join(global.MksDataFolderPath, config.FOLDER_MKS_BACKUPS)
+
+	// Set temp path for temporals files
+	global.TemporalsPath = path.Join(global.MksDataFolderPath, config.FOLDER_TEMPORALS)
 
 	// Set cache path for templates
-	global.TemplateCachePath = path.Join(global.ConfigFolderPath, config.FOLDER_TEMPLATE_CACHE)
+	global.TemplateCachePath = path.Join(global.MksDataFolderPath, config.FOLDER_TEMPLATE_CACHE)
+
+	// Create cache, autobackups, temporal and exports folders if not exist
+	os.MkdirAll(global.ExportPath, config.FOLDER_PERMISSION)
+	os.MkdirAll(global.ZipCachePath, config.FOLDER_PERMISSION)
+	os.MkdirAll(global.TemporalsPath, config.FOLDER_PERMISSION)
+	os.MkdirAll(global.AutoBackupsPath, config.FOLDER_PERMISSION)
+	os.MkdirAll(global.TemplateCachePath, config.FOLDER_PERMISSION)
+	os.MkdirAll(global.UserTemplatesFolderPath, config.FOLDER_PERMISSION)
 
 	return nil
 }
 
-func SetTemporalsPath() error {
-
-	if global.ConfigFolderPath == "" {
-		err := SetUserConfigFolderPath()
+func setMksDataIfNotExist() error {
+	if global.MksDataFolderPath == "" {
+		err := SetMksDataFolderPath()
 		if err != nil {
 			return err
 		}
 	}
-
-	// Set temp path for temporals files
-	global.TemporalsPath = path.Join(global.ConfigFolderPath, config.FOLDER_TEMPORALS)
-
-	return nil
-}
-
-func SetExportsPath() error {
-
-	if global.ConfigFolderPath == "" {
-		err := SetUserConfigFolderPath()
-		if err != nil {
-			return err
-		}
-	}
-
-	// Set temp path for temporals files
-	global.TemporalsPath = path.Join(global.ConfigFolderPath, config.FOLDER_EXPORTS)
 
 	return nil
 }
