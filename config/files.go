@@ -52,5 +52,6 @@ const (
 
 // Mks modules files
 const (
+	FILE_MKS_MODULE_MANAGER     = "module_manager.go"
 	FILE_MKS_INSTALLED_FEATURES = "installed_features.json"
 )
