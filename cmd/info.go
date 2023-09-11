@@ -23,7 +23,7 @@ func InfoCmd() *cobra.Command {
 			fmt.Println(" └──── Repository: ", config.MKS_Info_Repository)
 			fmt.Println("")
 			fmt.Println("[+] Routes:")
-			fmt.Println(" └─┬── User data directory:            ", global.ConfigFolderPath)
+			fmt.Println(" └─┬── User data directory:            ", global.MksDataFolderPath)
 			fmt.Println("   ├── User data temporals:            ", global.TemporalsPath)
 			fmt.Println("   ├── User data templates zip cache:  ", global.ZipCachePath)
 			fmt.Println("   ├── User data templates installed:  ", global.UserTemplatesFolderPath)
