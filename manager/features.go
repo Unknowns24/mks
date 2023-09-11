@@ -95,8 +95,10 @@ func AddFeature(feature string) error {
 }
 
 func InstallFeature(templatePath string) error {
+	templateName := filepath.Base(templatePath)
+
 	if global.Verbose {
-		fmt.Printf("[+] Checking if %s's template is already installed..\n", templatePath)
+		fmt.Printf("[+] Checking if %s's template is already installed in the application..\n", templateName)
 	}
 
 	// Get all installed features inside the application
@@ -106,21 +108,19 @@ func InstallFeature(templatePath string) error {
 	}
 
 	// Check if requested feature is already installed
-	if utils.SliceContainsElement(installedFeatures, templatePath) {
-		return fmt.Errorf("%s's template is already installed", templatePath)
+	if utils.SliceContainsElement(installedFeatures, templateName) {
+		return fmt.Errorf("%s's template is already installed", templateName)
 	}
 
 	if global.Verbose {
-		fmt.Printf("[+] Validating %s's template to install..\n", templatePath)
+		fmt.Printf("[+] Validating %s's template to install..\n", templateName)
 	}
-
-	templateName := filepath.Base(templatePath)
-	dependsFilePath := path.Join(templatePath, config.FILE_ADDON_TEMPLATE_DEPENDS)
 
 	if global.Verbose {
 		fmt.Println("[+] Checking if template has dependency file..")
 	}
 
+	dependsFilePath := path.Join(templatePath, config.FILE_ADDON_TEMPLATE_DEPENDS)
 	var dependenciesInOrder []string
 
 	// Validate if exists a depends file
@@ -142,6 +142,7 @@ func InstallFeature(templatePath string) error {
 			fmt.Println("[+] Parsing dependency file..")
 		}
 
+		// Get the order to install dependencies recursively
 		dependenciesInOrder, err = utils.GetDependenciesInstallationOrder(dependsFilePath)
 		if err != nil {
 			return err
@@ -173,49 +174,54 @@ func InstallFeature(templatePath string) error {
 		fmt.Println("[+] Copying the application to the temporal folder..")
 	}
 
+	applicationTempDir := path.Join(temporalDirectoryPath, filepath.Base(global.BasePath))
+
 	// Copy application on the temporal directory
-	AppFolderContent, err := utils.ListDirectoriesAndFiles(global.BasePath)
+	err = utils.CopyFileOrDirectory(global.BasePath, applicationTempDir)
 	if err != nil {
 		utils.DeleteFileOrDirectory(temporalDirectoryPath)
 		return err
 	}
 
-	for _, fileOrDirectory := range AppFolderContent {
-		err := utils.CopyFileOrDirectory(path.Join(global.BasePath, fileOrDirectory), path.Join(temporalDirectoryPath, fileOrDirectory))
-		if err != nil {
-			utils.DeleteFileOrDirectory(temporalDirectoryPath)
-			return err
-		}
-	}
-
 	// 	Check if mks_modules app is already created on the application (if not exists create it)
-	mksModulesFolderPath := path.Join(temporalDirectoryPath, config.FOLDER_MKS_MODULES)
-	if !utils.FileOrDirectoryExists(mksModulesFolderPath) {
-		if global.Verbose {
-			fmt.Println("[+] Copying mks_modules to the application..")
-		}
+	mksModulesFolderPath := path.Join(applicationTempDir, config.FOLDER_MKS_MODULES)
 
-		err := utils.CopyFileOrDirectory(path.Join(global.MksTemplatesFolderPath, config.FOLDER_MKS_MODULES), mksModulesFolderPath)
-		if err != nil {
-			return err
-		}
+	if !utils.FileOrDirectoryExists(mksModulesFolderPath) {
+		return errors.New("this application is not an mks builded application")
 	}
 
 	if global.Verbose {
 		fmt.Printf("[+] Preparing to install %s dependencies template..\n", templateName)
 	}
 
+	// Import all no installed dependencies to the application
 	for _, dependencyTemplateName := range dependenciesInOrder {
-		err := ImportFeatureToApp(path.Join(global.UserTemplatesFolderPath, dependencyTemplateName), temporalDirectoryPath)
-		if err != nil {
-			return fmt.Errorf(`error on %s's "%s" dependency installation: %s"`, templateName, dependencyTemplateName, err)
+		if !utils.SliceContainsElement(installedFeatures, dependencyTemplateName) {
+			err := ImportFeatureToApp(path.Join(global.UserTemplatesFolderPath, dependencyTemplateName), applicationTempDir)
+			if err != nil {
+				return fmt.Errorf(`error on %s's "%s" dependency installation: %s"`, templateName, dependencyTemplateName, err)
+			}
+
+			installedFeatures = append(installedFeatures, dependencyTemplateName)
 		}
 	}
 
-	err = ImportFeatureToApp(templatePath, temporalDirectoryPath)
+	if global.Verbose && len(dependenciesInOrder) > 0 {
+		fmt.Printf("[+] All %s dependencies installed successfully.\n", templateName)
+	}
+
+	// Import main feature to the application
+	err = ImportFeatureToApp(templatePath, applicationTempDir)
 	if err != nil {
 		return fmt.Errorf(`error on %s installation: %s"`, templateName, err)
 	}
+
+	if global.Verbose {
+		fmt.Println("[+] Setting up mks module manager..")
+	}
+
+	//TODO: Implement generation of loadModules and unloadModules
+	//TODO: Implement generation of installed_features.json
 
 	return nil
 }
@@ -223,23 +229,13 @@ func InstallFeature(templatePath string) error {
 func ImportFeatureToApp(templatePath, workingDirectory string) error {
 	templateName := filepath.Base(templatePath)
 
-	appInstalledFeatures, err := GetApplicationInstalledFeatures()
-	if err != nil {
-		return err
-	}
-
 	if global.Verbose {
 		fmt.Printf("[+] Preparing %s template to be imported to the application..\n", templateName)
 	}
 
-	// if feature already installed pass it
-	if utils.SliceContainsElement(appInstalledFeatures, templateName) {
-		if global.Verbose {
-			fmt.Printf("[+] %s already installed in the application..", templateName)
-		}
-
-		return nil
-	}
+	/******************
+	* PROMPTS PARSING *
+	*******************/
 
 	// Check if template has prompt files
 	if global.Verbose {
@@ -257,6 +253,231 @@ func ImportFeatureToApp(templatePath, workingDirectory string) error {
 		if err != nil {
 			return fmt.Errorf(`error parsing %s: %s"`, templatePromptsFile, err)
 		}
+	}
+
+	/**************************
+	* LOAD AND UNLOAD PARSING *
+	***************************/
+
+	// Check if template has load file
+	if global.Verbose {
+		fmt.Printf("[+] Check if %s has a load file..\n", templateName)
+	}
+
+	// Validate that this.load file (if exists) pass code validations
+	mainLoadFilePath := path.Join(templatePath, config.FILE_ADDON_TEMPLATE_MAIN_LOAD)
+
+	if utils.FileOrDirectoryExists(mainLoadFilePath) {
+		err := validateMksModulesFiles(mainLoadFilePath, config.SPELL_FUNCION_LOAD_PREFIX, templateName)
+		if err != nil {
+			return err
+		}
+
+		// Install load file
+		if global.Verbose {
+			fmt.Printf("[+] Installing %s load file..\n", templateName)
+		}
+
+		mainLoadFinalPath := path.Join(workingDirectory, config.FOLDER_MKS_MODULES, fmt.Sprintf("%s%s%s", config.SPELL_FUNCION_LOAD_PREFIX, templateName, config.FILE_EXTENSION_GO))
+		err = utils.CreateFileFromTemplateWithCustomReplace(mainLoadFilePath, mainLoadFinalPath, placeHoldersToReplace)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Check if template has load file
+	if global.Verbose {
+		fmt.Printf("[+] Check if %s has an unload file..\n", templateName)
+	}
+
+	// Validate that this.unload file (if exists) pass code validations
+	mainUnloadFilePath := path.Join(templateName, config.FILE_ADDON_TEMPLATE_MAIN_UNLOAD)
+
+	if utils.FileOrDirectoryExists(mainLoadFilePath) {
+		err := validateMksModulesFiles(mainUnloadFilePath, config.SPELL_FUNCION_UNLOAD_PREFIX, templateName)
+		if err != nil {
+			return err
+		}
+
+		// Install unload file
+		if global.Verbose {
+			fmt.Printf("[+] Installing %s unload file..\n", templateName)
+		}
+
+		mainUnloadFinalPath := path.Join(workingDirectory, config.FOLDER_MKS_MODULES, fmt.Sprintf("%s%s%s", config.SPELL_FUNCION_UNLOAD_PREFIX, templateName, config.FILE_EXTENSION_GO))
+		err = utils.CreateFileFromTemplateWithCustomReplace(mainLoadFilePath, mainUnloadFinalPath, placeHoldersToReplace)
+		if err != nil {
+			return err
+		}
+	}
+
+	/***********************
+	* PARSING CONFIG FILES *
+	************************/
+
+	// template config files path
+	envConfigFilePath := path.Join(templatePath, config.FILE_ADDON_TEMPLATE_ENVCONFIG)
+	goConfigFilePath := path.Join(templatePath, config.FILE_ADDON_TEMPLATE_GOCONFIG)
+
+	isGoConfigFile := utils.FileOrDirectoryExists(goConfigFilePath)
+	isEnvConfigFile := utils.FileOrDirectoryExists(envConfigFilePath)
+
+	// Check if template has load file
+	if global.Verbose {
+		fmt.Printf("[+] Check if %s has config files to install..\n", templateName)
+	}
+
+	// Check if is missing one config file
+	if (isGoConfigFile && !isEnvConfigFile) || (isEnvConfigFile && !isGoConfigFile) {
+		return fmt.Errorf("%s has a config file missing, if template use config must have %s and %s files", templateName, config.FILE_ADDON_TEMPLATE_GOCONFIG, config.FILE_ADDON_TEMPLATE_ENVCONFIG)
+	}
+
+	if isEnvConfigFile {
+		if global.Verbose {
+			fmt.Printf("[+] Installing %s env config file..\n", templateName)
+		}
+
+		// Get file content with placeholders replaced
+		newEnvConfig, err := utils.ReadFileWithCustomReplace(envConfigFilePath, placeHoldersToReplace)
+		if err != nil {
+			return err
+		}
+
+		// Adding new config at bottom of app.env file
+		err = utils.AddEnvConfigFromString(newEnvConfig, workingDirectory)
+		if err != nil {
+			return err
+		}
+	}
+
+	if isGoConfigFile {
+		if global.Verbose {
+			fmt.Printf("[+] Installing %s go config file..\n", templateName)
+		}
+
+		// Get file content with placeholders replaced
+		newGoConfig, err := utils.ReadFileWithCustomReplace(goConfigFilePath, placeHoldersToReplace)
+		if err != nil {
+			return err
+		}
+
+		// Adding new config inside config struct
+		err = utils.AddGoConfigFromString(newGoConfig, workingDirectory)
+		if err != nil {
+			return err
+		}
+	}
+
+	/************************************
+	* PARSING EXTENDS & TEMPLATES FILES *
+	************************************/
+
+	var ExtendsFiles []string
+	var TemplatesFiles []string
+
+	fileList, err := utils.ListFiles(templatePath)
+	if err != nil {
+		return err
+	}
+
+	if global.Verbose {
+		fmt.Printf("[+] Check if %s has .extends or .template files to install..\n", templateName)
+	}
+
+	// Search templates and extends files
+	for _, file := range fileList {
+		if strings.HasSuffix(file, config.FILE_EXTENSION_EXTENDS) {
+			ExtendsFiles = append(ExtendsFiles, file)
+		}
+
+		if strings.HasSuffix(file, config.FILE_EXTENSION_TEMPLATE) {
+			TemplatesFiles = append(TemplatesFiles, file)
+		}
+	}
+
+	if global.Verbose && len(ExtendsFiles) > 0 {
+		fmt.Println("[+] Preparing .extends files to install..")
+	}
+
+	// Iterate and copy every extend file
+	for _, extendFile := range ExtendsFiles {
+		if global.Verbose {
+			fmt.Printf("[+] Installing %s files..\n", extendFile)
+		}
+
+		// Get mks file custom path structure
+		filePath := path.Join(templatePath, extendFile)
+		filePathStructure, err := utils.ProcessMksCustomFilesPath(filePath)
+		if err != nil {
+			return err
+		}
+
+		// Check if file to extend exists
+		finalDirectoriesPath := path.Join(workingDirectory, config.FOLDER_SRC, path.Join(filePathStructure.Folders[:]...))
+		finalFileToExtend := path.Join(finalDirectoriesPath, filePathStructure.FileName, config.FILE_EXTENSION_GO)
+		if !utils.FileOrDirectoryExists(finalFileToExtend) {
+			return fmt.Errorf("%s's %s extend file is trying to extend an unexistent file", templateName, extendFile)
+		}
+
+		// Get file content
+		extendsFileContent, err := utils.ReadFileWithCustomReplace(filePath, placeHoldersToReplace)
+		if err != nil {
+			return err
+		}
+
+		err = utils.ExtendFile(finalFileToExtend, extendsFileContent)
+		if err != nil {
+			return err
+		}
+
+		if global.Verbose {
+			fmt.Printf("[+] %s file installed successfuly..\n", extendFile)
+		}
+	}
+
+	if global.Verbose && len(TemplatesFiles) > 0 {
+		fmt.Println("[+] Preparing .template files to install..")
+	}
+
+	// Iterate and copy every template file
+	for _, templateFile := range TemplatesFiles {
+		if global.Verbose {
+			fmt.Printf("[+] Installing %s files..\n", templateFile)
+		}
+
+		// Get mks file custom path structure
+		filePath := path.Join(templatePath, templateFile)
+		filePathStructure, err := utils.ProcessMksCustomFilesPath(templateFile)
+		if err != nil {
+			return err
+		}
+
+		// Check if directory exists (if not create them)
+		finalDirectoriesPath := path.Join(workingDirectory, config.FOLDER_SRC, path.Join(filePathStructure.Folders[:]...))
+		if !utils.FileOrDirectoryExists(finalDirectoriesPath) {
+			err := os.MkdirAll(finalDirectoriesPath, config.FOLDER_PERMISSION)
+			if err != nil {
+				return err
+			}
+		}
+
+		finalTemplateFilePath := path.Join(finalDirectoriesPath, fmt.Sprintf("%s%s", filePathStructure.FileName, config.FILE_EXTENSION_GO))
+		if utils.FileOrDirectoryExists(finalTemplateFilePath) {
+			return fmt.Errorf("%s's %s extend file is trying to create a file that already exists", templateName, templateFile)
+		}
+
+		err = utils.CreateFileFromTemplate(filePath, finalTemplateFilePath)
+		if err != nil {
+			return err
+		}
+
+		if global.Verbose {
+			fmt.Printf("[+] %s file installed successfuly..\n", templateFile)
+		}
+	}
+
+	if global.Verbose {
+		fmt.Printf("[+] %s installed successfully..\n", templateName)
 	}
 
 	return nil
