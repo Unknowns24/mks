@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/user"
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/unknowns24/mks/config"
 	"github.com/unknowns24/mks/global"
@@ -23,8 +25,6 @@ type Feature struct {
 	HasLoad   bool   `json:"hasLoad"`
 	HasUnload bool   `json:"hasUnload"`
 }
-
-var temporalDirectoryPath string
 
 func getApplicationInstalledFeatures() ([]Feature, error) {
 	// Read file content
@@ -106,10 +106,7 @@ func AddFeature(feature string) error {
 
 	err = installFeature(path.Join(global.UserTemplatesFolderPath, feature))
 	if err != nil {
-		if temporalDirectoryPath != "" {
-			os.RemoveAll(temporalDirectoryPath)
-		}
-
+		fmt.Printf("[-] Error happend, if some files were modified search your application on backup path..\n%s\n", global.AutoBackupsPath)
 		return err
 	}
 
@@ -185,30 +182,28 @@ func installFeature(templatePath string) error {
 	}
 
 	if global.Verbose {
-		fmt.Println("[+] Creating a temporal folder to work..")
+		fmt.Println("[+] Creating application backup..")
 	}
 
-	// Create temporal directory to prevent make a mess on the current application
-	temporalDirectoryPath, err = utils.MakeTemporalDirectory()
+	baseFolderName := filepath.Base(global.BasePath)
+
+	// try to obtain current user data & if no error, use username
+	username := ""
+	if usr, err := user.Current(); err == nil {
+		username = usr.Username
+	}
+
+	// create and sanitize filename with username and current time (without extension)
+	fileName := utils.SanitizeFileName(fmt.Sprintf("%s_backup_%s_%s", baseFolderName, username, time.Now().Format("2006-01-02_15-04-05")))
+
+	// Backup application on autobackup directory
+	err = utils.ZipDirectoryContent(path.Join(global.AutoBackupsPath, fileName), global.BasePath)
 	if err != nil {
-		return err
-	}
-
-	if global.Verbose {
-		fmt.Println("[+] Copying the application to the temporal folder..")
-	}
-
-	applicationTempDir := path.Join(temporalDirectoryPath, filepath.Base(global.BasePath))
-
-	// Copy application on the temporal directory
-	err = utils.CopyFileOrDirectory(global.BasePath, applicationTempDir)
-	if err != nil {
-		os.RemoveAll(temporalDirectoryPath)
-		return err
+		return fmt.Errorf("failed to create a %s backup: %s", baseFolderName, err)
 	}
 
 	// 	Check if mks_modules app is already created on the application (if not exists create it)
-	mksModulesFolderPath := path.Join(applicationTempDir, config.FOLDER_MKS_MODULES)
+	mksModulesFolderPath := path.Join(global.BasePath, config.FOLDER_MKS_MODULES)
 
 	if !utils.FileOrDirectoryExists(mksModulesFolderPath) {
 		return errors.New("this application is not an mks builded application")
@@ -221,7 +216,7 @@ func installFeature(templatePath string) error {
 	// Import all no installed dependencies to the application
 	for _, dependencyTemplateName := range dependenciesInOrder {
 		if !isFeatureInstalled(installedFeatures, dependencyTemplateName) {
-			err := importFeatureToApp(path.Join(global.UserTemplatesFolderPath, dependencyTemplateName), applicationTempDir)
+			err := importFeatureToApp(path.Join(global.UserTemplatesFolderPath, dependencyTemplateName), global.BasePath)
 			if err != nil {
 				return fmt.Errorf(`error on %s's "%s" dependency installation: %s"`, templateName, dependencyTemplateName, err)
 			}
@@ -239,7 +234,7 @@ func installFeature(templatePath string) error {
 	}
 
 	// Import main feature to the application
-	err = importFeatureToApp(templatePath, applicationTempDir)
+	err = importFeatureToApp(templatePath, global.BasePath)
 	if err != nil {
 		return fmt.Errorf(`error on %s installation: %s"`, templateName, err)
 	}
@@ -256,7 +251,7 @@ func installFeature(templatePath string) error {
 	}
 
 	// Generate/Regenerate mks_modules files
-	err = generateModuleManagerFiles(applicationTempDir, installedFeatures)
+	err = generateModuleManagerFiles(global.BasePath, installedFeatures)
 	if err != nil {
 		return err
 	}
@@ -266,7 +261,7 @@ func installFeature(templatePath string) error {
 	}
 
 	// Install all go packages to go.mod
-	err = utils.InstallNeededPackages(applicationTempDir)
+	err = utils.InstallNeededPackages(global.BasePath)
 	if err != nil {
 		return err
 	}
@@ -276,25 +271,12 @@ func installFeature(templatePath string) error {
 	}
 
 	// Check all go files sintax
-	err = utils.CheckAllGoFilesInDirectory(applicationTempDir)
+	err = utils.CheckAllGoFilesInDirectory(global.BasePath)
 	if err != nil {
 		return err
 	}
 
-	// Rename user application directory
-	if err := os.Rename(global.BasePath, fmt.Sprintf("%s_bkp", global.BasePath)); err != nil {
-		return err
-	}
-
-	// Copy modified application to BasePath
-	if global.Verbose {
-		fmt.Println("[+] Copying modified application to old application path..")
-	}
-
-	err = utils.CopyFileOrDirectory(applicationTempDir, global.BasePath)
-	if err != nil {
-		return err
-	}
+	fmt.Println("[+] Installation finalized successfully..")
 
 	return nil
 }
