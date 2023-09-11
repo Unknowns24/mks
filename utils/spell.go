@@ -65,7 +65,7 @@ func CheckSyntaxGoFile(filePath string) (bool, error) {
 	fs := token.NewFileSet()
 	_, err = parser.ParseFile(fs, tempFilePath, nil, parser.AllErrors)
 
-	DeleteFileOrDirectory(tempFilePath)
+	os.RemoveAll(tempFilePath)
 
 	return (err == nil), err
 }
@@ -83,7 +83,7 @@ func CheckPackageNameInFile(filePath string, expectedPackageName string) (bool, 
 		return false, err
 	}
 
-	DeleteFileOrDirectory(tempFilePath)
+	os.RemoveAll(tempFilePath)
 
 	return node.Name.Name == expectedPackageName, nil
 }
@@ -109,7 +109,7 @@ func FunctionExistsInFile(filePath string, functionName string) (bool, error) {
 		}
 	}
 
-	DeleteFileOrDirectory(tempFilePath)
+	os.RemoveAll(tempFilePath)
 
 	return false, nil
 }
