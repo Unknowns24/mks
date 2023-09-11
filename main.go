@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/unknowns24/mks/cmd"
 	"github.com/unknowns24/mks/config"
 	"github.com/unknowns24/mks/global"
@@ -37,11 +39,17 @@ func main() {
 		panic(err)
 	}
 
-	// Create cache and temporal folders if not exist
-	utils.MakeDirectory(global.ZipCachePath, config.FOLDER_PERMISSION)
-	utils.MakeDirectory(global.TemplateCachePath, config.FOLDER_PERMISSION)
-	utils.MakeDirectory(global.TemporalsPath, config.FOLDER_PERMISSION)
-	utils.MakeDirectory(global.UserTemplatesFolderPath, config.FOLDER_PERMISSION)
+	err = utils.SetExportsPath()
+	if err != nil {
+		panic(err)
+	}
+
+	// Create cache, temporal and exports folders if not exist
+	os.MkdirAll(global.ZipCachePath, config.FOLDER_PERMISSION)
+	os.MkdirAll(global.TemplateCachePath, config.FOLDER_PERMISSION)
+	os.MkdirAll(global.TemporalsPath, config.FOLDER_PERMISSION)
+	os.MkdirAll(global.UserTemplatesFolderPath, config.FOLDER_PERMISSION)
+	os.MkdirAll(global.ExportPath, config.FOLDER_PERMISSION)
 
 	/******************
 	* EXECUTING COBRA *
