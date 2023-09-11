@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -111,4 +112,35 @@ func FunctionExistsInFile(filePath string, functionName string) (bool, error) {
 	DeleteFileOrDirectory(tempFilePath)
 
 	return false, nil
+}
+
+func CheckAllGoFilesInDirectory(dirPath string) error {
+	filesAndFolders, err := ListDirectoriesAndFiles(dirPath)
+	if err != nil {
+		return err
+	}
+
+	for _, element := range filesAndFolders {
+		info, err := os.Stat(element)
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			err = CheckAllGoFilesInDirectory(element)
+			if err != nil {
+				return err
+			}
+		} else if filepath.Ext(element) == config.FILE_EXTENSION_GO {
+			valid, err := CheckSyntaxGoFile(element)
+			if err != nil {
+				return err
+			}
+			if !valid {
+				return fmt.Errorf("syntax error in %s", element)
+			}
+		}
+	}
+
+	return nil
 }

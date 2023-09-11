@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -11,6 +12,12 @@ import (
 	"github.com/unknowns24/mks/config"
 	"github.com/unknowns24/mks/global"
 )
+
+type MksTemplatePath struct {
+	Folders       []string
+	FileName      string
+	FileExtension string
+}
 
 /******************************
 * CREATE FILES FROM TEMPLATES *
@@ -25,8 +32,8 @@ func CreateFileFromTemplate(templatePath, finalPath string) error {
 		return err
 	}
 
-	// Replace placeholders with the actual service name
-	fileContent := strings.ReplaceAll(string(templateContent), config.PLACEHOLDER_PACKAGENAME, global.ServiceName)
+	// Replace placeholders with the actual application name
+	fileContent := strings.ReplaceAll(string(templateContent), config.PLACEHOLDER_PACKAGENAME, global.ApplicationName)
 
 	// Write the file content in the file
 	if err := os.WriteFile(finalPath, []byte(fileContent), os.ModePerm); err != nil {
@@ -138,9 +145,9 @@ func ExtendFile(filePath, newContent string) error {
 ***********************************/
 
 // Function to add a new configuration before the closing of the Config structure in the source file
-func AddGoConfigFromString(newConfig string) error {
+func AddGoConfigFromString(newConfig, workDirectory string) error {
 	// Path to the source file
-	filePath := filepath.Join(global.BasePath, config.FOLDER_SRC, config.FOLDER_UTILS, config.FILE_GO_CONFIG)
+	filePath := filepath.Join(workDirectory, config.FOLDER_SRC, config.FOLDER_UTILS, config.FILE_GO_CONFIG)
 
 	// Read the current content of the file
 	content, err := os.ReadFile(filePath)
@@ -153,7 +160,7 @@ func AddGoConfigFromString(newConfig string) error {
 
 	// Find the line that defines the Config structure
 	for i, line := range lines {
-		if strings.Contains(line, "Config") && strings.Contains(line, "struct") {
+		if strings.Contains(line, config.SPELL_STRUCT_CONFIG_NAME) && strings.Contains(line, config.SPELL_STRUCT_PREFIX) {
 			configClosingBraceIndex = findClosingBrace(lines, i)
 			break
 		}
@@ -164,7 +171,7 @@ func AddGoConfigFromString(newConfig string) error {
 	}
 
 	// Insert the new configuration before the closing of the Config structure
-	newContent := fmt.Sprintf("%s\n%s\n%s", strings.Join(lines[:configClosingBraceIndex], "\n"), newConfig, strings.Join(lines[configClosingBraceIndex:], "\n"))
+	newContent := fmt.Sprintf("%s\n\t%s\n%s", strings.Join(lines[:configClosingBraceIndex], "\n"), newConfig, strings.Join(lines[configClosingBraceIndex:], "\n"))
 
 	// Write the updated content to the file
 	err = os.WriteFile(filePath, []byte(newContent), config.FOLDER_PERMISSION)
@@ -176,10 +183,10 @@ func AddGoConfigFromString(newConfig string) error {
 }
 
 // Function to add a new configuration before the closing of the Config structure in the source file
-func AddEnvConfigFromString(newConfig string) error {
+func AddEnvConfigFromString(newConfig, workDirectory string) error {
 	// Path to the source file
-	envFilePath := filepath.Join(global.BasePath, config.FILE_CONFIG_ENV)
-	exampleEnvfilePath := filepath.Join(global.BasePath, config.FILE_CONFIG_ENVEXAMPLE)
+	envFilePath := filepath.Join(workDirectory, config.FILE_CONFIG_ENV)
+	exampleEnvfilePath := filepath.Join(workDirectory, config.FILE_CONFIG_ENVEXAMPLE)
 
 	// Read the current content of the file
 	content, err := os.ReadFile(envFilePath)
@@ -249,6 +256,10 @@ func ExtractImports(code string) []string {
 
 	return imports
 }
+
+/***************************************
+ * IMPORT BASE CONTENT AND MKS_MODULES *
+ ***************************************/
 
 func ImportBaseContent(sourcePath, finalPath string) error {
 	filesAndDirs, err := ListDirectoriesAndFiles(sourcePath)
@@ -320,6 +331,70 @@ func ImportBaseContent(sourcePath, finalPath string) error {
 				CopyFileOrDirectory(fileOrDirPath, finalFilePath)
 			}
 		}
+	}
+
+	return nil
+}
+
+/*************************************
+* PROCESS MKS FILES WITH CUSTOM PATH *
+**************************************/
+
+func ProcessMksCustomFilesPath(fileName string) (MksTemplatePath, error) {
+	var templatePath MksTemplatePath
+
+	// Check if path is to a .template or .extends file
+	if !strings.HasSuffix(fileName, config.FILE_EXTENSION_EXTENDS) && !strings.HasSuffix(fileName, config.FILE_EXTENSION_TEMPLATE) {
+		return templatePath, fmt.Errorf("%s is not a path to a .template or .extends file", fileName)
+	}
+
+	parts := strings.Split(fileName, ".")
+
+	if len(parts) < 2 {
+		return templatePath, errors.New("template file path string should have at least one dot separator")
+	}
+
+	templatePath.FileExtension = parts[len(parts)-1]
+	templatePath.FileName = parts[len(parts)-2]
+	templatePath.Folders = parts[:len(parts)-2]
+
+	return templatePath, nil
+}
+
+/******************************
+* ADD CONTENT INSIDE FUNCTION *
+*******************************/
+
+// Function to add a new configuration before the closing of the Config structure in the source file
+func AddContentInsideFunction(filePath, functionName, newContent string) error {
+	// Read the current content of the file
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	lines := strings.Split(string(content), "\n")
+	var configClosingBraceIndex int
+
+	// Find the line that defines the Config structure
+	for i, line := range lines {
+		if strings.Contains(line, config.SPELL_FUNCION_PREFIX) && strings.Contains(line, functionName) {
+			configClosingBraceIndex = findClosingBrace(lines, i)
+			break
+		}
+	}
+
+	if configClosingBraceIndex == -1 {
+		return fmt.Errorf("could not find closing brace for the %s function", functionName)
+	}
+
+	// Insert the new configuration before the closing of the Config structure
+	finalContent := fmt.Sprintf("%s\n%s\n%s", strings.Join(lines[:configClosingBraceIndex], "\n"), newContent, strings.Join(lines[configClosingBraceIndex:], "\n"))
+
+	// Write the updated content to the file
+	err = os.WriteFile(filePath, []byte(finalContent), config.FOLDER_PERMISSION)
+	if err != nil {
+		return err
 	}
 
 	return nil

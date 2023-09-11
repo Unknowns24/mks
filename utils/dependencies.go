@@ -28,7 +28,7 @@ func ValidateAllDependenciesInstalled(dependsFilePath string) (bool, []string, e
 	// Read file content
 	fileContent, err := ReadFile(dependsFilePath)
 	if err != nil {
-		return false, []string{}, err
+		return false, nil, err
 	}
 
 	var parsedFile dependsFileFormat
@@ -36,7 +36,7 @@ func ValidateAllDependenciesInstalled(dependsFilePath string) (bool, []string, e
 	// Parse json file and save data on parsedFile variable
 	err = json.Unmarshal([]byte(fileContent), &parsedFile)
 	if err != nil {
-		return false, []string{}, err
+		return false, nil, err
 	}
 
 	notInstalledTemplates := []string{}
@@ -46,6 +46,23 @@ func ValidateAllDependenciesInstalled(dependsFilePath string) (bool, []string, e
 
 		if !FileOrDirectoryExists(templatePath) {
 			notInstalledTemplates = append(notInstalledTemplates, dependency)
+		} else {
+			// Validate if dependency has dependencies
+			thisTemplateDependencyFile := path.Join(templatePath, config.FILE_ADDON_TEMPLATE_DEPENDS)
+			if FileOrDirectoryExists(thisTemplateDependencyFile) {
+				allDependenciesInstalled, dependencyMissingDependencies, err := ValidateAllDependenciesInstalled(thisTemplateDependencyFile)
+				if err != nil {
+					return false, nil, err
+				}
+
+				if !allDependenciesInstalled {
+					for _, thisDependency := range dependencyMissingDependencies {
+						if !SliceContainsElement(notInstalledTemplates, thisDependency) {
+							notInstalledTemplates = append(notInstalledTemplates, thisDependency)
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -53,7 +70,7 @@ func ValidateAllDependenciesInstalled(dependsFilePath string) (bool, []string, e
 		return false, notInstalledTemplates, nil
 	}
 
-	return true, []string{}, nil
+	return true, nil, nil
 }
 
 func loadDependencies(dependsFilePath string) (dependsFileFormat, error) {
@@ -127,8 +144,6 @@ func GetDependenciesInstallationOrder(dependencyFilePath string) ([]string, erro
 	if SliceContainsElement(result, fatherFeatureName) {
 		return nil, errors.New("cycle dependency detected, posible incompatibility on some of your templates")
 	}
-
-	result = append(result, fatherFeatureName)
 
 	return result, nil
 }

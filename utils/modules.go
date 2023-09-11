@@ -1,4 +1,4 @@
-package manager
+package utils
 
 import (
 	"errors"
@@ -40,8 +40,8 @@ func GetThisModuleName() (string, error) {
 	return match[1], nil
 }
 
-func InitGoModules(serviceName, basePath string) error {
-	initCmd := exec.Command("go", "mod", "init", serviceName)
+func InitGoModules(ApplicationName, basePath string) error {
+	initCmd := exec.Command("go", "mod", "init", ApplicationName)
 	initCmd.Dir = basePath
 	initOutput, err := initCmd.CombinedOutput()
 	if err != nil {

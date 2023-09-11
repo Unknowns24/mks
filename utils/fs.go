@@ -191,6 +191,23 @@ func ListDirectories(dirPath string) ([]string, error) {
 	return directories, nil
 }
 
+func ListFiles(dirPath string) ([]string, error) {
+	var files []string
+
+	entries, err := os.ReadDir(dirPath)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			files = append(files, entry.Name())
+		}
+	}
+
+	return files, nil
+}
+
 func findClosingBrace(lines []string, startIndex int) int {
 	braceCount := 0
 

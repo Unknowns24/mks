@@ -12,11 +12,11 @@ import (
 	"github.com/unknowns24/mks/utils"
 )
 
-func GenerateApplication(serviceName string, features []string) error {
-	fmt.Println("[+] Creating " + serviceName + " application..")
+func GenerateApplication(ApplicationName string, features []string) error {
+	fmt.Println("[+] Creating " + ApplicationName + " application..")
 
-	// making serviceName global
-	global.ServiceName = serviceName
+	// making ApplicationName global
+	global.ApplicationName = ApplicationName
 
 	// Get the current working directory
 	currentDir, err := os.Getwd()
@@ -29,12 +29,12 @@ func GenerateApplication(serviceName string, features []string) error {
 	}
 
 	// Create the base path for the application
-	global.BasePath = filepath.Join(currentDir, global.ServiceName)
+	global.BasePath = filepath.Join(currentDir, global.ApplicationName)
 
 	// Check if the application already was created
 	_, dirErr := os.Stat(global.BasePath)
 	if !os.IsNotExist(dirErr) {
-		return errors.New(global.ServiceName + " application already created!")
+		return errors.New(global.ApplicationName + " application already created!")
 	}
 
 	// Create base path directory
@@ -82,11 +82,11 @@ func GenerateApplication(serviceName string, features []string) error {
 			}
 		}
 
-		fmt.Printf("[+] application '%s' with features %v generated successfully!\n", global.ServiceName, features)
+		fmt.Printf("[+] application '%s' with features %v generated successfully!\n", global.ApplicationName, features)
 		return nil
 	}
 
-	fmt.Printf("[+] Base application '%s' generated successfully!\n", global.ServiceName)
+	fmt.Printf("[+] Base application '%s' generated successfully!\n", global.ApplicationName)
 	return nil
 }
 
@@ -120,7 +120,7 @@ func createBaseFiles() error {
 
 	// Map with all placeholders and its values to replace on .env template
 	envReplaces := map[string]string{
-		config.PLACEHOLDER_APP_NAME: global.ServiceName,
+		config.PLACEHOLDER_APP_NAME: global.ApplicationName,
 	}
 
 	appEnvTemplatePath := filepath.Join(global.MksTemplatesFolderPath, config.FOLDER_OTHERS, config.FILE_ENVCONFIG_APP)
@@ -186,7 +186,7 @@ func createBaseFiles() error {
 	}
 
 	// Initialice Go modules
-	err = InitGoModules(global.ServiceName, global.BasePath)
+	err = utils.InitGoModules(global.ApplicationName, global.BasePath)
 	if err != nil {
 		return err
 	}
@@ -203,7 +203,7 @@ func installBasePackages() error {
 		fmt.Println("[+] Installing base packages..")
 	}
 
-	err := InstallNeededPackages(global.BasePath)
+	err := utils.InstallNeededPackages(global.BasePath)
 	if err != nil {
 		return err
 	}

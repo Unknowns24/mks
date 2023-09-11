@@ -15,11 +15,16 @@ func BuildCmd() *cobra.Command {
 		Short: "Create an application with custom features",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			serviceName := args[0]
+			ApplicationName := args[0]
 			features, _ := cmd.Flags().GetStringSlice(config.FLAG_FEATURE_LONG)
 
 			// Validate every feature on features string slice
 			for _, feature := range features {
+				// prevent all features invalid error
+				if feature == config.ALL_FEATURES {
+					continue
+				}
+
 				validFeature := manager.IsValidFeature(feature)
 
 				if !validFeature {
@@ -28,7 +33,7 @@ func BuildCmd() *cobra.Command {
 			}
 
 			// Main function start
-			return manager.GenerateApplication(serviceName, features)
+			return manager.GenerateApplication(ApplicationName, features)
 		},
 	}
 

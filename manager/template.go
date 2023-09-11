@@ -79,7 +79,6 @@ func installTemplateFiles(templateRootDir string, useFlag []string) error {
 	}
 
 	for _, currentTemplaName := range useTemplates {
-
 		currentTemplateOriginPath := path.Join(templateRootDir, currentTemplaName)
 		currentTemplateDestinationPath := path.Join(global.UserTemplatesFolderPath, currentTemplaName)
 		err := utils.CopyFileOrDirectory(currentTemplateOriginPath, currentTemplateDestinationPath)
@@ -506,9 +505,9 @@ func validateMksModulesFiles(fileToCheck, fileType, templateName string) error {
 			return fmt.Errorf("invalid template structure: %s must have %s package name", fileToCheck, config.SPELL_PACKAGE_MKS_MODULE)
 		}
 
-		valid, err = utils.FunctionExistsInFile(fileToCheck, fileType+templateName)
+		valid, err = utils.FunctionExistsInFile(fileToCheck, fmt.Sprintf("%s%s", fileType, templateName))
 		if err != nil || !valid {
-			return fmt.Errorf("invalid template structure: %s must have %s function", fileToCheck, fileType+templateName)
+			return fmt.Errorf("invalid template structure: %s must have %s function", fileToCheck, fmt.Sprintf("%s%s", fileType, templateName))
 		}
 	}
 	return nil
