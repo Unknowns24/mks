@@ -216,12 +216,24 @@ func InstallFeature(templatePath string) error {
 		return fmt.Errorf(`error on %s installation: %s"`, templateName, err)
 	}
 
+	// Add main feature to installed features
+	installedFeatures = append(installedFeatures, templateName)
+
 	if global.Verbose {
 		fmt.Println("[+] Setting up mks module manager..")
 	}
 
-	//TODO: Implement generation of loadModules and unloadModules
-	//TODO: Implement generation of installed_features.json
+	// Generate/Regenerate mks_modules files
+	err = generateModuleManagerFiles(applicationTempDir, installedFeatures)
+	if err != nil {
+		return err
+	}
+
+	// Install all go packages to go.mod
+	err = utils.InstallNeededPackages(applicationTempDir)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -479,6 +491,13 @@ func ImportFeatureToApp(templatePath, workingDirectory string) error {
 	if global.Verbose {
 		fmt.Printf("[+] %s installed successfully..\n", templateName)
 	}
+
+	return nil
+}
+
+func generateModuleManagerFiles(workingDirectory string, installedFeatures []string) error {
+	//TODO: Implement generation of loadModules and unloadModules
+	//TODO: Implement generation of installed_features.json
 
 	return nil
 }
