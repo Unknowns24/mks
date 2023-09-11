@@ -4,18 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"go/ast"
-	"go/parser"
-	"go/token"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 
 	"github.com/unknowns24/mks/config"
 	"github.com/unknowns24/mks/global"
-	"golang.org/x/tools/go/ast/astutil"
 )
 
 type dependsFileFormat struct {
@@ -152,54 +146,4 @@ func GetDependenciesInstallationOrder(dependencyFilePath string) ([]string, erro
 	}
 
 	return result, nil
-}
-
-func ExtractOrderOfElementsInFunction(filePath, functionName string) []string {
-	// Open the file
-	file, err := os.Open(filePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	// Create a token.FileSet
-	fset := token.NewFileSet()
-
-	// Parse the file
-	node, err := parser.ParseFile(fset, filePath, file, parser.AllErrors)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Find the desired function
-	var order []string
-	astutil.Apply(node, iterateFunctionElements(functionName, &order), nil)
-
-	return order
-}
-
-func iterateFunctionElements(functionName string, order *[]string) func(c *astutil.Cursor) bool {
-	return func(c *astutil.Cursor) bool {
-		// Find the function by its name
-		if funcDecl, ok := c.Node().(*ast.FuncDecl); ok && funcDecl.Name.Name == functionName {
-			// Iterate through function calls within the desired function
-			astutil.Apply(funcDecl, func(c *astutil.Cursor) bool {
-				if callExpr, ok := c.Node().(*ast.CallExpr); ok {
-					// Extract the name of the called function
-					if ident, ok := callExpr.Fun.(*ast.Ident); ok {
-						functionName := ident.Name
-
-						// Remove "load" or "unload" at the beginning and "()"" at the end
-						functionName = strings.TrimPrefix(functionName, "unload")
-						functionName = strings.TrimPrefix(functionName, "load")
-						functionName = strings.TrimSuffix(functionName, "()")
-
-						*order = append(*order, functionName)
-					}
-				}
-				return true
-			}, nil)
-		}
-		return true
-	}
 }
