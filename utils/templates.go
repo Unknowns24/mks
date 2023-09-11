@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -11,6 +12,12 @@ import (
 	"github.com/unknowns24/mks/config"
 	"github.com/unknowns24/mks/global"
 )
+
+type MksTemplatePath struct {
+	Folders       []string
+	FileName      string
+	FileExtension string
+}
 
 /******************************
 * CREATE FILES FROM TEMPLATES *
@@ -138,9 +145,9 @@ func ExtendFile(filePath, newContent string) error {
 ***********************************/
 
 // Function to add a new configuration before the closing of the Config structure in the source file
-func AddGoConfigFromString(newConfig string) error {
+func AddGoConfigFromString(newConfig, workDirectory string) error {
 	// Path to the source file
-	filePath := filepath.Join(global.BasePath, config.FOLDER_SRC, config.FOLDER_UTILS, config.FILE_GO_CONFIG)
+	filePath := filepath.Join(workDirectory, config.FOLDER_SRC, config.FOLDER_UTILS, config.FILE_GO_CONFIG)
 
 	// Read the current content of the file
 	content, err := os.ReadFile(filePath)
@@ -176,10 +183,10 @@ func AddGoConfigFromString(newConfig string) error {
 }
 
 // Function to add a new configuration before the closing of the Config structure in the source file
-func AddEnvConfigFromString(newConfig string) error {
+func AddEnvConfigFromString(newConfig, workDirectory string) error {
 	// Path to the source file
-	envFilePath := filepath.Join(global.BasePath, config.FILE_CONFIG_ENV)
-	exampleEnvfilePath := filepath.Join(global.BasePath, config.FILE_CONFIG_ENVEXAMPLE)
+	envFilePath := filepath.Join(workDirectory, config.FILE_CONFIG_ENV)
+	exampleEnvfilePath := filepath.Join(workDirectory, config.FILE_CONFIG_ENVEXAMPLE)
 
 	// Read the current content of the file
 	content, err := os.ReadFile(envFilePath)
@@ -249,6 +256,10 @@ func ExtractImports(code string) []string {
 
 	return imports
 }
+
+/***************************************
+ * IMPORT BASE CONTENT AND MKS_MODULES *
+ ***************************************/
 
 func ImportBaseContent(sourcePath, finalPath string) error {
 	filesAndDirs, err := ListDirectoriesAndFiles(sourcePath)
@@ -323,4 +334,25 @@ func ImportBaseContent(sourcePath, finalPath string) error {
 	}
 
 	return nil
+}
+
+func ProcessMksCustomFilesPath(fileName string) (MksTemplatePath, error) {
+	var templatePath MksTemplatePath
+
+	// Check if path is to a .template or .extends file
+	if !strings.HasSuffix(fileName, config.FILE_EXTENSION_EXTENDS) && !strings.HasSuffix(fileName, config.FILE_EXTENSION_TEMPLATE) {
+		return templatePath, fmt.Errorf("%s is not a path to a .template or .extends file", fileName)
+	}
+
+	parts := strings.Split(fileName, ".")
+
+	if len(parts) < 2 {
+		return templatePath, errors.New("template file path string should have at least one dot separator")
+	}
+
+	templatePath.FileExtension = parts[len(parts)-1]
+	templatePath.FileName = parts[len(parts)-2]
+	templatePath.Folders = parts[:len(parts)-2]
+
+	return templatePath, nil
 }
