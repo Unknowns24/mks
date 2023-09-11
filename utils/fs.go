@@ -116,18 +116,18 @@ func ZipDirectoryContent(outputzipfilepath, directoryPath string) error {
 	buf := new(bytes.Buffer)
 	zw := zip.NewWriter(buf)
 
-	// Función para agregar archivos y directorios al archivo zip
+	// function to add files and directories to zip file
 	err := filepath.Walk(directoryPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		// Evitar añadir el directorio raíz mismo al archivo zip
+		// prevents adding the root directory itself to the zip file
 		if path == directoryPath {
 			return nil
 		}
 
-		// Crear la estructura de directorios y archivos en el archivo zip
+		// create the structure of directories and files in the zip file
 		relPath, _ := filepath.Rel(directoryPath, path)
 		header, err := zip.FileInfoHeader(info)
 		if err != nil {
@@ -158,31 +158,31 @@ func ZipDirectoryContent(outputzipfilepath, directoryPath string) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error al agregar contenido al zip: %v", err)
+		return fmt.Errorf("can't add file or directory to zip file: %v", err)
 	}
 
 	if err := zw.Close(); err != nil {
-		return fmt.Errorf("Error al cerrar el archivo zip: %v", err)
+		return fmt.Errorf("can't close zip file: %v", err)
 	}
 
 	zipFile, err := os.Create(outputzipfilepath)
 	if err != nil {
-		return fmt.Errorf("Error al crear el archivo zip: %v", err)
+		return fmt.Errorf("can't create zip file: %v", err)
 	}
 	defer zipFile.Close()
 
 	_, err = buf.WriteTo(zipFile)
 	if err != nil {
-		return fmt.Errorf("Error al escribir el archivo zip: %v", err)
+		return fmt.Errorf("can't write to zip file: %v", err)
 	}
 	return nil
 }
 
 func SanitizeFileName(input string) string {
-	// Reemplazar espacios con guiones bajos
+	// replace spaces with underscores
 	sanitized := strings.ReplaceAll(input, " ", "_")
 
-	// Usar una expresión regular para eliminar cualquier carácter que no sea alfanumérico, guión o guión bajo
+	// use a regular expression to remove any character that is not alphanumeric, dash or underscore
 	reg := regexp.MustCompile("[^a-zA-Z0-9-_]+")
 	sanitized = reg.ReplaceAllString(sanitized, "_")
 

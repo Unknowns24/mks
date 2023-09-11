@@ -166,8 +166,8 @@ func ExportTemplates(useFlag []string) error {
 	}
 
 	// move zip file to exports folder
-	os.MkdirAll(path.Join(global.ConfigFolderPath, config.FOLDER_EXPORTS), config.FOLDER_PERMISSION)
-	err = utils.MoveFileOrDirectory(path.Join(tempDir, fileName), path.Join(global.ConfigFolderPath, config.FOLDER_EXPORTS, fileName+config.FILE_EXTENSION_ZIP))
+	os.MkdirAll(global.ExportPath, config.FOLDER_PERMISSION)
+	err = utils.MoveFileOrDirectory(path.Join(tempDir, fileName), path.Join(global.ExportPath, fileName+config.FILE_EXTENSION_ZIP))
 	if err != nil {
 		os.RemoveAll(tempDir) // delete temporary directory
 		return fmt.Errorf("failed to move zip file to current directory: %s", err)
@@ -175,7 +175,7 @@ func ExportTemplates(useFlag []string) error {
 
 	os.RemoveAll(tempDir) // delete temporary directory
 	fmt.Println("[+] Template(s) exported successfully!")
-	fmt.Println(" └──── " + path.Join(global.ConfigFolderPath, config.FOLDER_EXPORTS, fileName+config.FILE_EXTENSION_ZIP))
+	fmt.Println(" └──── " + path.Join(global.ExportPath, fileName+config.FILE_EXTENSION_ZIP))
 
 	return nil
 }
