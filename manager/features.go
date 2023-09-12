@@ -194,7 +194,7 @@ func installFeature(templatePath string) error {
 	}
 
 	// create and sanitize filename with username and current time (without extension)
-	fileName := utils.SanitizeFileName(fmt.Sprintf("%s_backup_%s_%s", baseFolderName, username, time.Now().Format("2006-01-02_15-04-05")))
+	fileName := utils.SanitizeFileName(fmt.Sprintf("%s_backup_%s_%s%s", baseFolderName, username, time.Now().Format("2006-01-02_15-04-05"), config.FILE_EXTENSION_ZIP))
 
 	// Backup application on autobackup directory
 	err = utils.ZipDirectoryContent(path.Join(global.AutoBackupsPath, fileName), global.BasePath)
@@ -300,7 +300,7 @@ func importFeatureToApp(templatePath, workingDirectory string) error {
 	templatePromptsFile := path.Join(templatePath, config.FILE_ADDON_TEMPLATE_PROMPTS)
 
 	placeHoldersToReplace := map[string]string{
-		config.PLACEHOLDER_APP_NAME: global.ApplicationName,
+		config.PLACEHOLDER_PACKAGENAME: global.ApplicationName,
 	}
 
 	if utils.FileOrDirectoryExists(templatePromptsFile) {
@@ -348,7 +348,7 @@ func importFeatureToApp(templatePath, workingDirectory string) error {
 	// Validate that this.unload file (if exists) pass code validations
 	mainUnloadFilePath := path.Join(templateName, config.FILE_ADDON_TEMPLATE_MAIN_UNLOAD)
 
-	if utils.FileOrDirectoryExists(mainLoadFilePath) {
+	if utils.FileOrDirectoryExists(mainUnloadFilePath) {
 		err := validateMksModulesFiles(mainUnloadFilePath, config.SPELL_FUNCION_UNLOAD_PREFIX, templateName)
 		if err != nil {
 			return err
@@ -360,7 +360,7 @@ func importFeatureToApp(templatePath, workingDirectory string) error {
 		}
 
 		mainUnloadFinalPath := path.Join(workingDirectory, config.FOLDER_MKS_MODULES, fmt.Sprintf("%s%s%s", config.SPELL_FUNCION_UNLOAD_PREFIX, templateName, config.FILE_EXTENSION_GO))
-		err = utils.CreateFileFromTemplateWithCustomReplace(mainLoadFilePath, mainUnloadFinalPath, placeHoldersToReplace)
+		err = utils.CreateFileFromTemplateWithCustomReplace(mainUnloadFilePath, mainUnloadFinalPath, placeHoldersToReplace)
 		if err != nil {
 			return err
 		}
@@ -577,15 +577,15 @@ func generateModuleManagerFiles(workingDirectory string, installedFeatures []Fea
 			loadFunctions = append(loadFunctions, fmt.Sprintf("%s%s()", config.SPELL_FUNCION_LOAD_PREFIX, installedFeature.Feature))
 
 			// Path to mks_modules/load<feature>.go file
-			finaMainLoadFilePath := path.Join(workingDirectory, config.FOLDER_MKS_MODULES, fmt.Sprintf("%s%s%s", config.SPELL_FUNCION_LOAD_PREFIX, installedFeature.Feature, config.FILE_EXTENSION_GO))
+			finalMainLoadFilePath := path.Join(workingDirectory, config.FOLDER_MKS_MODULES, fmt.Sprintf("%s%s%s", config.SPELL_FUNCION_LOAD_PREFIX, installedFeature.Feature, config.FILE_EXTENSION_GO))
 
 			// Check if load file is already installed inside mks_modules folder
-			if !utils.FileOrDirectoryExists(finaMainLoadFilePath) {
+			if !utils.FileOrDirectoryExists(finalMainLoadFilePath) {
 				// Path of file to copy
 				mainLoadFilePath := path.Join(global.UserTemplatesFolderPath, installedFeature.Feature, config.FILE_ADDON_TEMPLATE_MAIN_LOAD)
 
-				// Copy file to mks_modules folder with the correct name
-				err = utils.CopyFileOrDirectory(mainLoadFilePath, finaMainLoadFilePath)
+				// Copy file to mks_modules folder with the correct name and without placeholders
+				err = utils.CreateFileFromTemplate(mainLoadFilePath, finalMainLoadFilePath)
 				if err != nil {
 					return err
 				}
@@ -598,15 +598,15 @@ func generateModuleManagerFiles(workingDirectory string, installedFeatures []Fea
 			unloadFunctions = append(unloadFunctions, fmt.Sprintf("%s%s()", config.SPELL_FUNCION_UNLOAD_PREFIX, installedFeature.Feature))
 
 			// Path to mks_modules/unload<feature>.go file
-			finaMainUnloadFilePath := path.Join(workingDirectory, config.FOLDER_MKS_MODULES, fmt.Sprintf("%s%s%s", config.SPELL_FUNCION_UNLOAD_PREFIX, installedFeature.Feature, config.FILE_EXTENSION_GO))
+			finalMainUnloadFilePath := path.Join(workingDirectory, config.FOLDER_MKS_MODULES, fmt.Sprintf("%s%s%s", config.SPELL_FUNCION_UNLOAD_PREFIX, installedFeature.Feature, config.FILE_EXTENSION_GO))
 
 			// Check if unload file is already installed inside mks_modules folder
-			if !utils.FileOrDirectoryExists(finaMainUnloadFilePath) {
+			if !utils.FileOrDirectoryExists(finalMainUnloadFilePath) {
 				// Path of file to copy
 				mainUnloadFilePath := path.Join(global.UserTemplatesFolderPath, installedFeature.Feature, config.FILE_ADDON_TEMPLATE_MAIN_UNLOAD)
 
-				// Copy file to mks_modules folder with the correct name
-				err = utils.CopyFileOrDirectory(mainUnloadFilePath, finaMainUnloadFilePath)
+				// Copy file to mks_modules folder with the correct name and without placeholders
+				err = utils.CreateFileFromTemplate(mainUnloadFilePath, finalMainUnloadFilePath)
 				if err != nil {
 					return err
 				}
