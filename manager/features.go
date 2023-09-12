@@ -469,7 +469,7 @@ func importFeatureToApp(templatePath, workingDirectory string) error {
 
 		// Check if file to extend exists
 		finalDirectoriesPath := path.Join(workingDirectory, config.FOLDER_SRC, path.Join(filePathStructure.Folders[:]...))
-		finalFileToExtend := path.Join(finalDirectoriesPath, filePathStructure.FileName, config.FILE_EXTENSION_GO)
+		finalFileToExtend := path.Join(finalDirectoriesPath, fmt.Sprintf("%s%s", filePathStructure.FileName, config.FILE_EXTENSION_GO))
 		if !utils.FileOrDirectoryExists(finalFileToExtend) {
 			return fmt.Errorf("%s's %s extend file is trying to extend an unexistent file", templateName, extendFile)
 		}
