@@ -1,4 +1,4 @@
-package utils
+package manager
 
 import (
 	"fmt"
@@ -8,11 +8,36 @@ import (
 
 	"github.com/unknowns24/mks/config"
 	"github.com/unknowns24/mks/global"
+	"github.com/unknowns24/mks/utils"
 )
 
-func SetMksTemplatesFolderPath() error {
+func SetupMks() error {
+	// set MksTemplatesFolderPath global variable
+	if err := setMksTemplatesFolderPath(); err != nil {
+		return err
+	}
+
+	// set & create MksDataFolderPath global variable
+	if err := setMksDataFolderPath(); err != nil {
+		return err
+	}
+
+	// Set & create: ExportPath, ZipCachePath, AutoBackupsPath, TemporalsPath, TemplateCachePath global variables
+	if err := setMksDataFoldersPath(); err != nil {
+		return err
+	}
+
+	// Set UserTemplatesFolderPath & InstalledTemplates global variables
+	if err := setCurrentInstalledTemplates(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func setMksTemplatesFolderPath() error {
 	// Get the directory path of the current file (generator.go)
-	mksDir, err := GetExecutablePath()
+	mksDir, err := utils.GetExecutablePath()
 	if err != nil {
 		return fmt.Errorf("failed to get current file path")
 	}
@@ -23,7 +48,7 @@ func SetMksTemplatesFolderPath() error {
 	return nil
 }
 
-func SetMksDataFolderPath() error {
+func setMksDataFolderPath() error {
 	configPath, err := os.UserConfigDir()
 	if err != nil {
 		return fmt.Errorf("error happend on config directory: %s", err)
@@ -31,7 +56,7 @@ func SetMksDataFolderPath() error {
 
 	mksConfigPath := path.Join(configPath, config.FOLDER_MKS)
 
-	if !FileOrDirectoryExists(mksConfigPath) {
+	if !utils.FileOrDirectoryExists(mksConfigPath) {
 		err = os.MkdirAll(mksConfigPath, config.FOLDER_PERMISSION)
 		if err != nil {
 			return err
@@ -42,32 +67,33 @@ func SetMksDataFolderPath() error {
 	return nil
 }
 
-func SetCurrentInstalledTemplates() error {
+func setCurrentInstalledTemplates() error {
 	// As this config uses MksDataFolderPath set it if is not declared
 	setMksDataIfNotExist()
-
-	userTemplatesPath := path.Join(global.MksDataFolderPath, config.FOLDER_TEMPLATES)
+	global.UserTemplatesFolderPath = path.Join(global.MksDataFolderPath, config.FOLDER_TEMPLATES)
 
 	// Create templates folder on mks app data directory if not exist
-	if !FileOrDirectoryExists(userTemplatesPath) {
-		err := os.MkdirAll(userTemplatesPath, config.FOLDER_PERMISSION)
-		if err != nil {
+	if !utils.FileOrDirectoryExists(global.UserTemplatesFolderPath) {
+		if err := os.MkdirAll(global.UserTemplatesFolderPath, config.FOLDER_PERMISSION); err != nil {
+			return err
+		}
+
+		if err := InstallTemplate(config.NETWORK_GITHUB_BASE_TEMPLATES_REPO, []string{}); err != nil {
 			return err
 		}
 	}
 
 	// Get installed templates
-	installedTemplates, err := ListDirectories(userTemplatesPath)
+	installedTemplates, err := utils.ListDirectories(global.UserTemplatesFolderPath)
 	if err != nil {
 		return err
 	}
 
 	global.InstalledTemplates = installedTemplates
-	global.UserTemplatesFolderPath = userTemplatesPath
 	return nil
 }
 
-func SetMksDataFoldersPath() error {
+func setMksDataFoldersPath() error {
 	// As this config uses MksDataFolderPath set it if is not declared
 	setMksDataIfNotExist()
 
@@ -98,7 +124,7 @@ func SetMksDataFoldersPath() error {
 
 func setMksDataIfNotExist() error {
 	if global.MksDataFolderPath == "" {
-		err := SetMksDataFolderPath()
+		err := setMksDataFolderPath()
 		if err != nil {
 			return err
 		}

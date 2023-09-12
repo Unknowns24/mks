@@ -189,7 +189,9 @@ func installTemplateFiles(templateRootDir string, useFlag []string) error {
 	for _, currentTemplaName := range useTemplates {
 		currentTemplateOriginPath := path.Join(templateRootDir, currentTemplaName)
 		currentTemplateDestinationPath := path.Join(global.UserTemplatesFolderPath, currentTemplaName)
+
 		err := utils.CopyFileOrDirectory(currentTemplateOriginPath, currentTemplateDestinationPath)
+
 		if err != nil {
 			return fmt.Errorf("failed to install template %s to addons folder: %s", currentTemplaName, err)
 		}
