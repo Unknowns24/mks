@@ -1,11 +1,32 @@
 ### Prompt structure
 
+Prompts are questions that MKS will ask the user every time the template is being installed
+
+#### `Prompt types:`
+
+| Type        | Description                                                                                       | Answer type           | Has validation |
+| ----------- | ------------------------------------------------------------------------------------------------- | --------------------- | -------------- |
+| **replace** | The answer of the prompt will be used to find and replace the specified placeholder on every file | mixed [String, Int]   | Yes            |
+| **extend**  | The answer of the prompt will determine if use a specific extend file or not                      | confirmation [Yes/No] | No             |
+
+-   `replace prompt structure`
+
 ```json
 {
 	"type": "replace",
-	"default": "",
+	"prompt": "prompt question",
 	"placeholder": "%%PACKAGE_NAME%%",
 	"validate": "<validationType>"
+}
+```
+
+-   `extends prompt structure`
+
+```json
+{
+	"type": "extend",
+	"prompt": "Do you require extra functions?",
+	"extendFile": "<folderName>.<fileName>.extends"
 }
 ```
 
