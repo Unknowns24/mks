@@ -34,20 +34,12 @@ const (
 	FILE_ADDON_TEMPLATE_MAIN_UNLOAD = "main.unload"
 )
 
-// Envconfig files
-const (
-	FILE_ENVCONFIG_APP = "app.envconfig"
-)
-
 // Extra files
 const (
-	FILE_DOCKER    = "Dockerfile"
-	FILE_GITIGNORE = ".gitignore"
-)
-
-// Zip files
-const (
-	FILE_ZIP_TEMPLATE = "template.zip"
+	FILE_DOCKER        = "Dockerfile"
+	FILE_GITIGNORE     = ".gitignore"
+	FILE_ZIP_TEMPLATE  = "template.zip"
+	FILE_ENVCONFIG_APP = "app.envconfig"
 )
 
 // Mks modules files
