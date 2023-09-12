@@ -100,7 +100,7 @@ func ParsePromptFile(promptFilePath string, placeholdersToReplace *map[string]st
 			}
 
 			// Prompt -> number validation
-			if strings.HasPrefix(prompt.Validate, config.VALIDATION_NUMBER) {
+			if strings.HasPrefix(prompt.Validate, config.VALIDATION_NUMBER) && !strings.HasPrefix(prompt.Validate, config.VALIDATION_NUMBER_RANGE) {
 				placeHolderValue, err := AskDataWithValidation(prompt.Prompt, validators.Number)
 				if err != nil {
 					return err
@@ -129,13 +129,13 @@ func ParsePromptFile(promptFilePath string, placeholdersToReplace *map[string]st
 				}
 
 				// Check min max valid range
-				if minValue.(int) <= maxValue.(int) {
+				if minValue.(int) > maxValue.(int) {
 					return fmt.Errorf("the prompt structure of the %s placeholder has an incorrect validation parameters value, minValue could not be higher than maxValue", prompt.Placeholder)
 				}
 
 				validatorOptions := validators.NumberRangeOptions{
 					Min: int32(minValue.(int)),
-					Max: int32(minValue.(int)),
+					Max: int32(maxValue.(int)),
 				}
 
 				placeHolderValue, err := AskDataWithValidation(prompt.Prompt, validators.NumberRange(validatorOptions))
