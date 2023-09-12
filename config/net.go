@@ -7,5 +7,5 @@ const (
 	NETWORK_MAIN_ZIP_ROUTE             = "/archive/refs/heads/main.zip"
 	NETWORK_GITHUB_BRANCH_SUFFIX       = "-main"
 	NETWORK_GITHUB_TEMPLATE_PREFIX     = "mks-"
-	NETWORK_GITHUB_BASE_TEMPLATES_REPO = "github.com/github.com/SeusCode/mks_modules"
+	NETWORK_GITHUB_BASE_TEMPLATES_REPO = "github.com/SeusCode/mks_modules"
 )
