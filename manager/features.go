@@ -299,12 +299,14 @@ func importFeatureToApp(templatePath, workingDirectory string) error {
 
 	templatePromptsFile := path.Join(templatePath, config.FILE_ADDON_TEMPLATE_PROMPTS)
 
+	var extendsFilesToSkip []string
+
 	placeHoldersToReplace := map[string]string{
 		config.PLACEHOLDER_PACKAGENAME: global.ApplicationName,
 	}
 
 	if utils.FileOrDirectoryExists(templatePromptsFile) {
-		err := utils.ParsePromptFile(templatePromptsFile, &placeHoldersToReplace)
+		err := utils.ParsePromptFile(templatePromptsFile, &placeHoldersToReplace, &extendsFilesToSkip)
 		if err != nil {
 			return fmt.Errorf(`error parsing %s: %s"`, templatePromptsFile, err)
 		}
@@ -441,52 +443,12 @@ func importFeatureToApp(templatePath, workingDirectory string) error {
 
 	// Search templates and extends files
 	for _, file := range fileList {
-		if strings.HasSuffix(file, config.FILE_EXTENSION_EXTENDS) {
+		if strings.HasSuffix(file, config.FILE_EXTENSION_EXTENDS) && !utils.SliceContainsElement(extendsFilesToSkip, file) {
 			ExtendsFiles = append(ExtendsFiles, file)
 		}
 
 		if strings.HasSuffix(file, config.FILE_EXTENSION_TEMPLATE) {
 			TemplatesFiles = append(TemplatesFiles, file)
-		}
-	}
-
-	if global.Verbose && len(ExtendsFiles) > 0 {
-		fmt.Println("[+] Preparing .extends files to install..")
-	}
-
-	// Iterate and copy every extend file
-	for _, extendFile := range ExtendsFiles {
-		if global.Verbose {
-			fmt.Printf("[+] Installing %s files..\n", extendFile)
-		}
-
-		// Get mks file custom path structure
-		filePath := path.Join(templatePath, extendFile)
-		filePathStructure, err := utils.ProcessMksCustomFilesPath(filePath)
-		if err != nil {
-			return err
-		}
-
-		// Check if file to extend exists
-		finalDirectoriesPath := path.Join(workingDirectory, config.FOLDER_SRC, path.Join(filePathStructure.Folders[:]...))
-		finalFileToExtend := path.Join(finalDirectoriesPath, fmt.Sprintf("%s%s", filePathStructure.FileName, config.FILE_EXTENSION_GO))
-		if !utils.FileOrDirectoryExists(finalFileToExtend) {
-			return fmt.Errorf("%s's %s extend file is trying to extend an unexistent file", templateName, extendFile)
-		}
-
-		// Get file content
-		extendsFileContent, err := utils.ReadFileWithCustomReplace(filePath, placeHoldersToReplace)
-		if err != nil {
-			return err
-		}
-
-		err = utils.ExtendFile(finalFileToExtend, extendsFileContent)
-		if err != nil {
-			return err
-		}
-
-		if global.Verbose {
-			fmt.Printf("[+] %s file installed successfuly..\n", extendFile)
 		}
 	}
 
@@ -509,6 +471,7 @@ func importFeatureToApp(templatePath, workingDirectory string) error {
 
 		// Check if directory exists (if not create them)
 		finalDirectoriesPath := path.Join(workingDirectory, config.FOLDER_SRC, path.Join(filePathStructure.Folders[:]...))
+
 		if !utils.FileOrDirectoryExists(finalDirectoriesPath) {
 			err := os.MkdirAll(finalDirectoriesPath, config.FOLDER_PERMISSION)
 			if err != nil {
@@ -528,6 +491,47 @@ func importFeatureToApp(templatePath, workingDirectory string) error {
 
 		if global.Verbose {
 			fmt.Printf("[+] %s file installed successfuly..\n", templateFile)
+		}
+	}
+
+	if global.Verbose && len(ExtendsFiles) > 0 {
+		fmt.Println("[+] Preparing .extends files to install..")
+	}
+
+	// Iterate and copy every extend file
+	for _, extendFile := range ExtendsFiles {
+		if global.Verbose {
+			fmt.Printf("[+] Installing %s files..\n", extendFile)
+		}
+
+		// Get mks file custom path structure
+		filePath := path.Join(templatePath, extendFile)
+		filePathStructure, err := utils.ProcessMksCustomFilesPath(extendFile)
+		if err != nil {
+			return err
+		}
+
+		// Check if file to extend exists
+		finalDirectoriesPath := path.Join(workingDirectory, config.FOLDER_SRC, path.Join(filePathStructure.Folders[:]...))
+
+		finalFileToExtend := path.Join(finalDirectoriesPath, fmt.Sprintf("%s%s", filePathStructure.FileName, config.FILE_EXTENSION_GO))
+		if !utils.FileOrDirectoryExists(finalFileToExtend) {
+			return fmt.Errorf("%s's %s extend file is trying to extend an unexistent file", templateName, extendFile)
+		}
+
+		// Get file content
+		extendsFileContent, err := utils.ReadFileWithCustomReplace(filePath, placeHoldersToReplace)
+		if err != nil {
+			return err
+		}
+
+		err = utils.ExtendFile(finalFileToExtend, extendsFileContent)
+		if err != nil {
+			return err
+		}
+
+		if global.Verbose {
+			fmt.Printf("[+] %s file installed successfuly..\n", extendFile)
 		}
 	}
 
