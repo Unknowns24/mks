@@ -19,6 +19,41 @@ type MksTemplatePath struct {
 	FileExtension string
 }
 
+// Compile regular expressions once
+var (
+	startsWithNumberRegex     = regexp.MustCompile(`^[0-9]`)
+	startsWithUnderscoreRegex = regexp.MustCompile(`^_`)
+	invalidCharactersRegex    = regexp.MustCompile(`[^a-zA-Z0-9_]`)
+)
+
+/********************************
+* VALIDATE TEMPLATE NAME FORMAT *
+*********************************/
+
+func ValidateTemplateName(templateName string) error {
+	// checks if template name is empty
+	if templateName == "" {
+		return errors.New("template name cannot be empty")
+	}
+
+	// checks if template name starts with number
+	if startsWithNumberRegex.MatchString(templateName) {
+		return errors.New("template name cannot start with a number")
+	}
+
+	// checks if template name starts with underscore
+	if startsWithUnderscoreRegex.MatchString(templateName) {
+		return errors.New("template name cannot start with an underscore")
+	}
+
+	// checks if template name contains invalid characters
+	if invalidCharactersRegex.MatchString(templateName) {
+		return errors.New("template name can only contain letters, numbers and underscores")
+	}
+
+	return nil
+}
+
 /******************************
 * CREATE FILES FROM TEMPLATES *
 *******************************/
