@@ -7,7 +7,7 @@ mks is a command-line interface (CLI) tool that helps you generate basic applica
 To install mks, you need to have [Go](https://go.dev/doc/install) installed on your system. Then, run the following command:
 
 ```sh
-go install github.com/unknowns24/mks
+go install github.com/unknowns24/mks@latest
 ```
 
 ## Usage
